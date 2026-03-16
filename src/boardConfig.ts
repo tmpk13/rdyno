@@ -102,6 +102,17 @@ export function setDefaultBoardFile(filename: string): void {
   writeRdynoToml(data);
 }
 
+export function getDefaultTargetFile(): string | undefined {
+  const data = readRdynoToml();
+  return typeof data.target === "string" ? data.target : undefined;
+}
+
+export function setDefaultTargetFile(relativePath: string): void {
+  const data = readRdynoToml();
+  data.target = relativePath;
+  writeRdynoToml(data);
+}
+
 export function getLayout(): PanelLayout | undefined {
   const layout = activeBoard?.layout;
   if (!layout) { return undefined; }

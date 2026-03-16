@@ -37,16 +37,6 @@
         <span class="btn-check"><img id="rttCheckIcon" class="btn-check-icon"></span>
       </button>
     </div>
-    <div class="panel-section" data-section="target">
-      <div class="label">Target</div>
-      <div class="cs-wrap">
-        <div class="cs-btn" onclick="toggleDrop(event,'menu-target')">
-          <span class="cs-val" id="cs-val-target">No files</span>
-          <img id="dropTarget" class="drop-icon">
-        </div>
-        <div class="drop-menu" id="menu-target"></div>
-      </div>
-    </div>
     <div class="panel-section" data-section="config">
       <div class="config-header" onclick="toggleConfig()">
         <img class="config-arrow" id="configArrow">
@@ -54,7 +44,15 @@
         <span id="probeDot" class="probe-dot" title="Checking..."></span>
       </div>
       <div id="configSection" style="display:none">
-        <div class="label" style="margin-top:6px">Board</div>
+        <div class="label" style="margin-top:6px">Target</div>
+        <div class="cs-wrap">
+          <div class="cs-btn" onclick="toggleDrop(event,'menu-target')">
+            <span class="cs-val" id="cs-val-target">No files</span>
+            <img id="dropTarget" class="drop-icon">
+          </div>
+          <div class="drop-menu" id="menu-target"></div>
+        </div>
+        <div class="label">Board</div>
         <div class="cs-wrap">
           <div class="cs-btn" onclick="toggleDrop(event,'menu-board')">
             <span class="cs-val" id="cs-val-board">-- choose a board --</span>

@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { exec } from "child_process";
-import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getEffectivePort, getLayout, getPortOverride, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setLayout, setPortOverride } from "./boardConfig";
+import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getEffectivePort, getLayout, getPortOverride, getDefaultTargetFile, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setDefaultTargetFile, setLayout, setPortOverride } from "./boardConfig";
 
 const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
     build: { label: "Build", color: "#1e7ec8" },
@@ -44,6 +44,8 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
         if (savedPort) { setPortOverride(savedPort); }
 
         if (!getActiveBoard()) { autoSelectBoard(); }
+        const savedTarget = getDefaultTargetFile();
+        if (savedTarget) { openFile(savedTarget); }
         view.webview.html = this.getHtml();
         this.sendState();
 
@@ -84,6 +86,11 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     break;
                 case "saveLayout":
                     setLayout(msg.data as PanelLayout);
+                    break;
+                case "setTarget":
+                    openFile(msg.data);
+                    setDefaultTargetFile(msg.data);
+                    this.sendState();
                     break;
                 case "setPort":
                     setPortOverride(msg.data || undefined);

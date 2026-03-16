@@ -9,8 +9,8 @@ let _uris = null;
 
 // --- Layout / edit mode ---
 
-const SECTION_LABELS = { files: 'Files', actions: 'Actions', rtt: 'RTT', target: 'Target', config: 'Config' };
-const DEFAULT_ORDER = ['files', 'actions', 'rtt', 'target', 'config'];
+const SECTION_LABELS = { files: 'Files', actions: 'Actions', rtt: 'RTT', config: 'Config' };
+const DEFAULT_ORDER = ['files', 'actions', 'rtt', 'config'];
 
 let _editMode = false;
 let _layout = { order: [...DEFAULT_ORDER], hidden: [] };
@@ -245,7 +245,7 @@ function toggleHidden() {
     const btn = document.getElementById('hiddenToggle');
     section.style.display = _isHiddenOpen ? 'block' : 'none';
     const hasHidden = STATE ? STATE.hiddenFiles.length > 0 : false;
-    btn.style.opacity = (_isHiddenOpen || hasHidden) ? '1' : '0.5';
+    btn.style.opacity = _isHiddenOpen ? '0.5' : '1';
     const hiddenIcon = document.getElementById('hiddenIcon');
     if (hiddenIcon && _uris && !hasHidden) {
         hiddenIcon.src = _isHiddenOpen ? _uris.eyeSlash : _uris.eye;
@@ -413,7 +413,7 @@ function render(state) {
 
     // Hidden toggle button
     const hiddenToggle = document.getElementById('hiddenToggle');
-    hiddenToggle.style.opacity = (_isHiddenOpen || hiddenFiles.length > 0) ? '1' : '0.5';
+    hiddenToggle.style.opacity = _isHiddenOpen ? '0.5' : '1';
     const hiddenIconEl = document.getElementById('hiddenIcon');
     let hiddenBadge = hiddenToggle.querySelector('.hidden-badge');
     if (!hiddenBadge) {
@@ -450,7 +450,7 @@ function render(state) {
     const menuTarget = document.getElementById('menu-target');
     menuTarget.innerHTML = '';
     if (files.length) {
-        files.forEach(f => menuTarget.appendChild(makeDropItem(basename(f), f === pickedFile, () => send('selectFile', f))));
+        files.forEach(f => menuTarget.appendChild(makeDropItem(basename(f), f === pickedFile, () => send('setTarget', f))));
     } else {
         menuTarget.innerHTML = '<div class="drop-item" style="opacity:0.5;cursor:default">No files</div>';
     }
