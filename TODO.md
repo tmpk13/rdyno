@@ -47,7 +47,13 @@
 - [ ] Toggle button that turns on edit mode where every element can be toggled and rearranged
     - [ ] Only in main panel
     - [ ] Turn off UI function of elements during this
-    - [ ] Settings stored in settings
+    - [ ] Adjustments stored in settings
+- [ ] Add examples section
+- [ ] Split up toml configs
+- [ ] Auto select main.rs as target
+- [ ] Use flex layout for better responsiveness
+- [ ] Separate icons for each command
+- [ ] Have options in board toml for new actions, have actions set in toml
 
 # ?
 - [ ] integrate installer for board toolchains??

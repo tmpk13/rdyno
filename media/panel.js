@@ -114,9 +114,85 @@ function setUris(uris) {
     img('configArrow').src = uris.drop;
 }
 
+// --- Template helpers ---
+
+function cloneTpl(id) {
+    return document.getElementById(id).content.cloneNode(true).firstElementChild;
+}
+
+function makeFileItem(f, i, pickedFile) {
+    const el = cloneTpl('tpl-file-item');
+    if (f === pickedFile) { el.classList.add('active'); }
+    el.dataset.file = f;
+    el.dataset.index = String(i);
+    el.title = f;
+    el.addEventListener('dragstart', e => onDragStart(e, +e.currentTarget.dataset.index));
+    el.addEventListener('dragend', onDragEnd);
+    el.addEventListener('dragover', e => onDragOver(e, +e.currentTarget.dataset.index));
+    el.addEventListener('drop', e => onDrop(e, +e.currentTarget.dataset.index));
+    el.addEventListener('click', e => onItemClick(e, f));
+    el.querySelector('.file-name').textContent = basename(f);
+    el.querySelector('.remove-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        send('hideFile', f);
+    });
+    return el;
+}
+
+function makeHiddenItem(f) {
+    const el = cloneTpl('tpl-hidden-item');
+    el.title = f;
+    el.querySelector('.file-name').textContent = basename(f);
+    el.querySelector('.remove-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        send('unhideFile', f);
+    });
+    return el;
+}
+
+function makeDropItem(label, isActive, onClick) {
+    const el = cloneTpl('tpl-drop-item');
+    el.textContent = label;
+    if (isActive) { el.classList.add('drop-active'); }
+    el.addEventListener('click', onClick);
+    return el;
+}
+
+function makeActionBtn(cmd, label, files, pickedFile, uris, cmdPreviews) {
+    const tipCmd = cmdPreviews[cmd];
+    if (files.length > 1) {
+        const el = cloneTpl('tpl-action-split');
+        el.id = 'grp-' + cmd;
+        const main = el.querySelector('.split-main');
+        main.dataset.tipLabel = label;
+        main.dataset.tipCmd = tipCmd;
+        main.addEventListener('click', () => sendAction(main, cmd));
+        main.querySelector('.btn-label').textContent = label;
+        main.querySelector('.btn-run-icon').src = uris.run;
+        main.querySelector('.btn-check-icon').src = uris.check;
+        const splitDrop = el.querySelector('.split-drop');
+        splitDrop.querySelector('.drop-icon').src = uris.drop;
+        splitDrop.addEventListener('click', e => toggleDrop(e, 'menu-' + cmd));
+        const menu = el.querySelector('.drop-menu');
+        menu.id = 'menu-' + cmd;
+        files.forEach(f => menu.appendChild(makeDropItem(basename(f), f === pickedFile, () => pickTarget(f, cmd))));
+        return el;
+    } else {
+        const el = cloneTpl('tpl-action-simple');
+        el.dataset.tipLabel = label;
+        el.dataset.tipCmd = tipCmd;
+        el.addEventListener('click', () => sendAction(el, cmd));
+        el.querySelector('.btn-label').textContent = label;
+        el.querySelector('.btn-run-icon').src = uris.run;
+        el.querySelector('.btn-check-icon').src = uris.check;
+        return el;
+    }
+}
+
+// --- Render ---
+
 function render(state) {
     STATE = state;
-    const esc = safeHtml;
     const { files, hiddenFiles, pickedFile, boards, activeBoardFile, activeName,
         effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris } = state;
 
@@ -128,22 +204,22 @@ function render(state) {
     }
 
     // File list
-    document.getElementById('fileList').innerHTML = files.length
-        ? files.map((f, i) =>
-            `<div class="file-item${f === pickedFile ? ' active' : ''}" draggable="true" data-file="${esc(f)}" data-index="${i}" ondragstart="onDragStart(event,${i})" ondragend="onDragEnd(event)" ondragover="onDragOver(event,${i})" ondrop="onDrop(event,${i})" onclick="onItemClick(event,${esc(JSON.stringify(f))})" title="${esc(f)}">
-  <span class="file-name">${esc(basename(f))}</span>
-  <button class="remove-btn" draggable="false" onclick="event.stopPropagation();send('hideFile',${esc(JSON.stringify(f))})" title="Hide file">&#x2715;</button>
-</div>`).join('\n')
-        : '<div class="file-empty">No files found</div>';
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '';
+    if (files.length) {
+        files.forEach((f, i) => fileList.appendChild(makeFileItem(f, i, pickedFile)));
+    } else {
+        fileList.innerHTML = '<div class="file-empty">No files found</div>';
+    }
 
     // Hidden file list
-    document.getElementById('hiddenList').innerHTML = hiddenFiles.length
-        ? hiddenFiles.map(f =>
-            `<div class="file-item hidden-item" title="${esc(f)}">
-  <span class="file-name">${esc(basename(f))}</span>
-  <button class="remove-btn" onclick="event.stopPropagation();send('unhideFile',${esc(JSON.stringify(f))})" title="Restore file">&#x2715;</button>
-</div>`).join('\n')
-        : '<div class="file-empty">No hidden files</div>';
+    const hiddenList = document.getElementById('hiddenList');
+    hiddenList.innerHTML = '';
+    if (hiddenFiles.length) {
+        hiddenFiles.forEach(f => hiddenList.appendChild(makeHiddenItem(f)));
+    } else {
+        hiddenList.innerHTML = '<div class="file-empty">No hidden files</div>';
+    }
 
     // Hidden toggle button
     const hiddenToggle = document.getElementById('hiddenToggle');
@@ -156,51 +232,46 @@ function render(state) {
     }
     hiddenBadge.textContent = hiddenFiles.length > 0 ? ` ${hiddenFiles.length}` : '';
 
-    // Action buttons (split vs simple based on file count)
-    document.getElementById('actionBtns').innerHTML = ['build', 'flash'].map(cmd => {
+    // Action buttons
+    const actionBtns = document.getElementById('actionBtns');
+    actionBtns.innerHTML = '';
+    ['build', 'flash'].forEach(cmd => {
         const label = cmd[0].toUpperCase() + cmd.slice(1);
-        const tipCmd = esc(cmdPreviews[cmd]);
-        const inner = `<span class="btn-icon"><img src="${uris.run}" class="btn-run-icon"></span>
-  <span class="btn-label">${label}</span>
-  <span class="btn-check"><img src="${uris.check}" class="btn-check-icon"></span>`;
-        if (files.length > 1) {
-            const dropItems = files.map(f =>
-                `<div class="drop-item${f === pickedFile ? ' drop-active' : ''}" onclick="pickTarget(${esc(JSON.stringify(f))},'${cmd}')">${esc(basename(f))}</div>`
-            ).join('');
-            return `<div class="split-group" id="grp-${cmd}">
-  <button class="split-main action-button" onclick="sendAction(this,'${cmd}')" data-tip-label="${label}" data-tip-cmd="${tipCmd}">${inner}</button>
-  <button class="split-drop" onclick="toggleDrop(event,'menu-${cmd}')"><img src="${uris.drop}" class="drop-icon"></button>
-  <div class="drop-menu" id="menu-${cmd}">${dropItems}</div>
-</div>`;
-        }
-        return `<button onclick="sendAction(this,'${cmd}')" class="action-button" data-tip-label="${label}" data-tip-cmd="${tipCmd}">${inner}</button>`;
-    }).join('\n');
+        actionBtns.appendChild(makeActionBtn(cmd, label, files, pickedFile, uris, cmdPreviews));
+    });
 
     // RTT button tip
-    document.getElementById('rttBtn').dataset.tipCmd = esc(cmdPreviews.rtt);
+    document.getElementById('rttBtn').dataset.tipCmd = cmdPreviews.rtt;
 
     // Target dropdown
     document.getElementById('cs-val-target').textContent = pickedFile ? basename(pickedFile) : 'No files';
-    document.getElementById('menu-target').innerHTML = files.length
-        ? files.map(f => `<div class="drop-item${f === pickedFile ? ' drop-active' : ''}" onclick="send('selectFile',${esc(JSON.stringify(f))})">${esc(basename(f))}</div>`).join('')
-        : '<div class="drop-item" style="opacity:0.5;cursor:default">No files</div>';
+    const menuTarget = document.getElementById('menu-target');
+    menuTarget.innerHTML = '';
+    if (files.length) {
+        files.forEach(f => menuTarget.appendChild(makeDropItem(basename(f), f === pickedFile, () => send('selectFile', f))));
+    } else {
+        menuTarget.innerHTML = '<div class="drop-item" style="opacity:0.5;cursor:default">No files</div>';
+    }
 
     // Config summary
-    const portSummary = effectivePort ? esc(effectivePort) : 'auto';
-    document.getElementById('configSummary').textContent = `${activeName} \u00b7 ${portSummary}`;
+    document.getElementById('configSummary').textContent = `${activeName} \u00b7 ${effectivePort || 'auto'}`;
 
     // Board dropdown
     document.getElementById('cs-val-board').textContent = activeBoardFile ? activeBoardFile.replace(/\.toml$/, '') : '-- choose a board --';
-    document.getElementById('menu-board').innerHTML = boards.length
-        ? boards.map(f => `<div class="drop-item${f === activeBoardFile ? ' drop-active' : ''}" onclick="send('selectBoard',${esc(JSON.stringify(f))})">${esc(f.replace(/\.toml$/, ''))}</div>`).join('')
-        : '<div class="drop-item" style="opacity:0.5;cursor:default">No boards</div>';
+    const menuBoard = document.getElementById('menu-board');
+    menuBoard.innerHTML = '';
+    if (boards.length) {
+        boards.forEach(f => menuBoard.appendChild(makeDropItem(f.replace(/\.toml$/, ''), f === activeBoardFile, () => send('selectBoard', f))));
+    } else {
+        menuBoard.innerHTML = '<div class="drop-item" style="opacity:0.5;cursor:default">No boards</div>';
+    }
 
     // Active board label
     document.getElementById('activeBoardLabel').textContent = `Active: ${activeName}`;
 
     // Port label
     document.getElementById('portLabelEl').innerHTML = 'Port' + (portIsFromConfig
-        ? ` <span style="opacity:0.6;font-style:italic">(from config: ${esc(effectivePort)})</span>`
+        ? ` <span style="opacity:0.6;font-style:italic">(from config: ${safeHtml(effectivePort)})</span>`
         : '');
 
     if (isFirst) {
@@ -219,10 +290,13 @@ window.addEventListener('message', e => {
         const cur = window.CURRENT_PORT || '';
         const ports = msg.data;
         const extra = cur && !ports.find(p => p.id === cur) ? [{ id: cur, label: cur }] : [];
-        menu.innerHTML = [{ id: '', label: '-- auto --' }, ...ports, ...extra]
-            .map(p => `<div class="drop-item${p.id === cur ? ' drop-active' : ''}" data-val="${safeHtml(p.id)}" onclick="pickPort(${JSON.stringify(p.id)},${JSON.stringify(p.label)})">${safeHtml(p.label)}</div>`)
-            .join('');
-        if (valEl) valEl.textContent = cur ? (ports.find(p => p.id === cur)?.label ?? cur) : 'auto';
+        menu.innerHTML = '';
+        [{ id: '', label: '-- auto --' }, ...ports, ...extra].forEach(p => {
+            const el = makeDropItem(p.label, p.id === cur, () => pickPort(p.id, p.label));
+            el.dataset.val = p.id;
+            menu.appendChild(el);
+        });
+        if (valEl) { valEl.textContent = cur ? (ports.find(p => p.id === cur)?.label ?? cur) : 'auto'; }
     } else if (msg.command === 'probeStatus') {
         const dot = document.getElementById('probeDot');
         if (!dot) { return; }
@@ -256,7 +330,7 @@ function onDragOver(e, index) {
 
 function onDrop(e, dropIndex) {
     e.preventDefault();
-    if (dragSrcIndex === null || dragSrcIndex === dropIndex) return;
+    if (dragSrcIndex === null || dragSrcIndex === dropIndex) { return; }
 
     const items = [...document.querySelectorAll('#fileList .file-item[data-file]')];
     const files = items.map(el => el.dataset.file);
@@ -277,9 +351,6 @@ function onDrop(e, dropIndex) {
 
     [...list.querySelectorAll('.file-item[data-index]')].forEach((el, i) => {
         el.dataset.index = String(i);
-        el.setAttribute('ondragstart', 'onDragStart(event,' + i + ')');
-        el.setAttribute('ondragover', 'onDragOver(event,' + i + ')');
-        el.setAttribute('ondrop', 'onDrop(event,' + i + ')');
     });
 
     dragSrcIndex = null;
