@@ -418,6 +418,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
     private getHtml(): string {
         const cssUri = this.view!.webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, "media", "panel.css"));
         const checkUri = this.view!.webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, "imgs", "check.svg"));
+        const plusUri = this.view!.webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, "imgs", "plus.svg"));
         return /*html*/`<!DOCTYPE html>
 <html>
 <head>
@@ -444,9 +445,11 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
   <script>
     const vscode = acquireVsCodeApi();
     const CHECK_URI = ${JSON.stringify(checkUri.toString())};
+    const PLUS_URI = ${JSON.stringify(plusUri.toString())};
     let boardIndex = {};
     function send(cmd, data) { vscode.postMessage({ command: cmd, data }); }
     function checkBtn(name) { return \`<button class="lib-added" data-board="\${esc(name)}" ondblclick="removeBoard(this)" title="Double-click to remove"><img src="\${CHECK_URI}"></button>\`; }
+    function plusBtn(name, url) { return \`<button class="lib-add" data-board="\${esc(name)}" data-url="\${esc(url)}" onclick="addBoard(this)"><img src="\${PLUS_URI}" style="width:12px;height:12px;display:block"></button>\`; }
     function removeBoard(btn) { const name = btn.dataset.board; btn.disabled = true; send('removeBoard', name); }
 
     function load() {
@@ -457,7 +460,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
     function addBoard(btn) {
       const name = btn.dataset.board;
       const downloadUrl = btn.dataset.url;
-      btn.disabled = true; btn.textContent = '…';
+      btn.disabled = true; btn.innerHTML = '…';
       send('addBoard', { name, downloadUrl });
     }
 
@@ -472,7 +475,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
         const rows = msg.data.map(b => {
           const btn = b.installed
             ? checkBtn(b.name)
-            : \`<button class="lib-add" data-board="\${esc(b.name)}" data-url="\${esc(b.downloadUrl)}" onclick="addBoard(this)">+</button>\`;
+            : plusBtn(b.name, b.downloadUrl);
           return \`<div class="lib-item"><span class="lib-name" title="\${esc(b.path)}">\${esc(b.path.replace(/\\.toml$/, ''))}</span>\${btn}</div>\`;
         }).join('');
         document.getElementById('content').innerHTML = \`<div class="lib-list">\${rows}</div>\`;
@@ -486,7 +489,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
         if (btn) { btn.outerHTML = checkBtn(msg.data); }
       } else if (msg.command === 'boardRemoved') {
         const btn = document.querySelector('[data-board="' + CSS.escape(msg.data) + '"]');
-        if (btn) { btn.outerHTML = \`<button class="lib-add" data-board="\${esc(msg.data)}" data-url="\${esc(boardIndex[msg.data] || '')}" onclick="addBoard(this)">+</button>\`; }
+        if (btn) { btn.outerHTML = plusBtn(msg.data, boardIndex[msg.data] || ''); }
       } else if (msg.command === 'boardError') {
         const btn = document.querySelector('[data-board="' + CSS.escape(msg.data.name) + '"]');
         if (btn) { btn.disabled = false; btn.textContent = '+'; }
