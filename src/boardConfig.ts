@@ -18,6 +18,11 @@ export interface NewProjectConfig {
   runner?: string;
 }
 
+export interface ActionConfig {
+  label?: string;
+  color?: string;
+}
+
 export interface BoardConfig {
   board: { name: string; chip: string; target: string };
   probe: { protocol: string; speed: number; port?: string };
@@ -25,6 +30,7 @@ export interface BoardConfig {
   rtt: { enabled: boolean; channels: { up: number; name: string }[] };
   run?: { command?: string };
   new_project?: NewProjectConfig;
+  actions?: Record<string, ActionConfig>;
 }
 
 let activeBoard: BoardConfig | undefined;
@@ -64,19 +70,50 @@ function pickerTomlPath(): string {
   return path.join(getBoardDir(), "rdyno.toml");
 }
 
-export function getDefaultBoardFile(): string | undefined {
+function readRdynoToml(): TOML.JsonMap {
   const p = pickerTomlPath();
-  if (!fs.existsSync(p)) { return undefined; }
+  if (!fs.existsSync(p)) { return {}; }
   try {
-    const parsed = TOML.parse(fs.readFileSync(p, "utf-8")) as { default?: string };
-    return parsed.default;
-  } catch { return undefined; }
+    return TOML.parse(fs.readFileSync(p, "utf-8")) as TOML.JsonMap;
+  } catch { return {}; }
+}
+
+function writeRdynoToml(data: TOML.JsonMap): void {
+  const dir = getBoardDir();
+  if (!fs.existsSync(dir)) { return; }
+  fs.writeFileSync(pickerTomlPath(), TOML.stringify(data), "utf-8");
+}
+
+export function getDefaultBoardFile(): string | undefined {
+  const data = readRdynoToml();
+  return typeof data.default === "string" ? data.default : undefined;
 }
 
 export function setDefaultBoardFile(filename: string): void {
-  const dir = getBoardDir();
-  if (!fs.existsSync(dir)) { return; }
-  fs.writeFileSync(pickerTomlPath(), `default = ${JSON.stringify(filename)}\n`, "utf-8");
+  const data = readRdynoToml();
+  data.default = filename;
+  writeRdynoToml(data);
+}
+
+export interface PanelLayout {
+  order: string[];
+  hidden: string[];
+}
+
+export function getLayout(): PanelLayout | undefined {
+  const data = readRdynoToml();
+  const layout = data.layout as { order?: unknown; hidden?: unknown } | undefined;
+  if (!layout) { return undefined; }
+  return {
+    order: Array.isArray(layout.order) ? layout.order as string[] : [],
+    hidden: Array.isArray(layout.hidden) ? layout.hidden as string[] : [],
+  };
+}
+
+export function setLayout(layout: PanelLayout): void {
+  const data = readRdynoToml();
+  data.layout = layout as unknown as TOML.JsonMap;
+  writeRdynoToml(data);
 }
 
 export function autoSelectBoard(): BoardConfig | undefined {

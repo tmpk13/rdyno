@@ -2,7 +2,13 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { exec } from "child_process";
-import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getEffectivePort, getPortOverride, listBoards, selectBoardByFile, setDefaultBoardFile, setPortOverride } from "./boardConfig";
+import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getEffectivePort, getLayout, getPortOverride, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setLayout, setPortOverride } from "./boardConfig";
+
+const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
+    build: { label: "Build", color: "#1e7ec8" },
+    flash: { label: "Flash", color: "#d1a618" },
+    rtt:   { label: "RTT Monitor", color: "#4caf50" },
+};
 import { getActiveFile, getCachedFiles, getHiddenFiles, hideFile, openFile, refreshFiles, reorderFiles, unhideFile } from "./filePicker";
 import { fetchLibraryList, fetchAndSaveBoard, isBoardCached, isBoardInWorkspace, copyBoardToWorkspace, removeBoard } from "./boardLibrary";
 
@@ -77,7 +83,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     reorderFiles(msg.data);
                     break;
                 case "saveLayout":
-                    this.ext.workspaceState.update("panelLayout", msg.data);
+                    setLayout(msg.data as PanelLayout);
                     break;
                 case "setPort":
                     setPortOverride(msg.data || undefined);
@@ -136,6 +142,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     flash: this.getCmdPreview("flash"),
                     rtt: this.getCmdPreview("rtt"),
                 },
+                actions: this.getResolvedActions(),
                 uris: {
                     run: uri("imgs/run.svg"),
                     refresh: uri("imgs/refresh.svg"),
@@ -144,7 +151,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     eye: uri("imgs/eye.svg"),
                     eyeSlash: uri("imgs/eye-slash.svg"),
                 },
-                layout: this.ext.workspaceState.get("panelLayout") ?? null,
+                layout: getLayout() ?? null,
             },
         });
     }
@@ -165,6 +172,16 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
         };
         poll();
         this._pollInterval = setInterval(poll, 5000);
+    }
+
+    private getResolvedActions(): Record<string, { label: string; color: string }> {
+        const boardActions = getActiveBoard()?.actions ?? {};
+        const resolved: Record<string, { label: string; color: string }> = {};
+        for (const [id, def] of Object.entries(DEFAULT_ACTIONS)) {
+            const override = boardActions[id] ?? {};
+            resolved[id] = { label: override.label ?? def.label, color: override.color ?? def.color };
+        }
+        return resolved;
     }
 
     private getCmdPreview(cmd: string): string {
@@ -204,13 +221,20 @@ export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
         this.view = view;
         view.webview.options = {
             enableScripts: true,
-            localResourceRoots: [vscode.Uri.joinPath(this.ext.extensionUri, "media")],
+            localResourceRoots: [
+                vscode.Uri.joinPath(this.ext.extensionUri, "media"),
+                vscode.Uri.joinPath(this.ext.extensionUri, "imgs"),
+            ],
         };
         view.webview.html = this.getHtml();
         this.sendState();
         view.webview.onDidReceiveMessage((msg) => {
             if (msg.command === "newProject") {
                 vscode.commands.executeCommand("embeddedRust.newProject");
+            } else if (msg.command === "selectBoard") {
+                selectBoardByFile(msg.data);
+                setDefaultBoardFile(msg.data);
+                this.sendState();
             }
         });
     }
@@ -221,12 +245,17 @@ export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
 
     private sendState() {
         if (!this.view) { return; }
+        const webview = this.view.webview;
+        const uri = (rel: string) => webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, rel)).toString();
         const board = getActiveBoard();
-        this.view.webview.postMessage({
+        webview.postMessage({
             command: "init",
             data: {
                 hasConfig: !!board?.new_project,
                 boardName: board?.board.name ?? "no board selected",
+                boards: listBoards(),
+                activeBoardFile: getActiveBoardFile(),
+                uris: { drop: uri("imgs/drop.svg") },
             },
         });
     }

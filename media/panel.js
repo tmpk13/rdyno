@@ -38,11 +38,30 @@ function toggleEditMode() {
     const btn = document.getElementById('editToggleBtn');
     btn.style.opacity = _editMode ? '1' : '0.5';
     btn.title = _editMode ? 'Done editing layout' : 'Edit panel layout';
+    document.getElementById('resetLayoutBtn').style.display = _editMode ? '' : 'none';
     if (_editMode) {
         enterEditMode();
     } else {
         exitEditMode();
     }
+}
+
+function resetLayout() {
+    _layout = { order: [...DEFAULT_ORDER], hidden: [] };
+    applyLayout();
+    // Rebuild edit bars with the reset state
+    const container = document.getElementById('sectionsContainer');
+    container.querySelectorAll('.edit-bar').forEach(b => b.remove());
+    container.querySelectorAll('.panel-section').forEach(el => {
+        el.draggable = false;
+        el.classList.remove('edit-section-hidden', 'drag-over-section', 'section-dragging');
+        el.removeEventListener('dragstart', onSectionDragStart);
+        el.removeEventListener('dragend', onSectionDragEnd);
+        el.removeEventListener('dragover', onSectionDragOver);
+        el.removeEventListener('drop', onSectionDrop);
+    });
+    enterEditMode();
+    send('saveLayout', _layout);
 }
 
 function enterEditMode() {
@@ -223,7 +242,7 @@ function toggleHidden() {
     const btn = document.getElementById('hiddenToggle');
     section.style.display = _isHiddenOpen ? 'block' : 'none';
     const hasHidden = STATE ? STATE.hiddenFiles.length > 0 : false;
-    btn.style.opacity = (_isHiddenOpen || hasHidden) ? '1' : '0.5';
+    btn.style.opacity = (_isHiddenOpen || hasHidden) ? '0.5' : '1';
     const hiddenIcon = document.getElementById('hiddenIcon');
     if (hiddenIcon && _uris) {
         hiddenIcon.src = _isHiddenOpen ? _uris.eyeSlash : _uris.eye;
@@ -313,12 +332,14 @@ function makeDropItem(label, isActive, onClick) {
     return el;
 }
 
-function makeActionBtn(cmd, label, files, pickedFile, uris, cmdPreviews) {
+function makeActionBtn(cmd, actionCfg, files, pickedFile, uris, cmdPreviews) {
+    const { label, color } = actionCfg;
     const tipCmd = cmdPreviews[cmd];
     if (files.length > 1) {
         const el = cloneTpl('tpl-action-split');
         el.id = 'grp-' + cmd;
         const main = el.querySelector('.split-main');
+        main.style.background = color;
         main.dataset.tipLabel = label;
         main.dataset.tipCmd = tipCmd;
         main.addEventListener('click', () => sendAction(main, cmd));
@@ -326,6 +347,7 @@ function makeActionBtn(cmd, label, files, pickedFile, uris, cmdPreviews) {
         main.querySelector('.btn-run-icon').src = uris.run;
         main.querySelector('.btn-check-icon').src = uris.check;
         const splitDrop = el.querySelector('.split-drop');
+        splitDrop.style.background = color;
         splitDrop.querySelector('.drop-icon').src = uris.drop;
         splitDrop.addEventListener('click', e => toggleDrop(e, 'menu-' + cmd));
         const menu = el.querySelector('.drop-menu');
@@ -334,6 +356,7 @@ function makeActionBtn(cmd, label, files, pickedFile, uris, cmdPreviews) {
         return el;
     } else {
         const el = cloneTpl('tpl-action-simple');
+        el.style.background = color;
         el.dataset.tipLabel = label;
         el.dataset.tipCmd = tipCmd;
         el.addEventListener('click', () => sendAction(el, cmd));
@@ -349,7 +372,7 @@ function makeActionBtn(cmd, label, files, pickedFile, uris, cmdPreviews) {
 function render(state) {
     STATE = state;
     const { files, hiddenFiles, pickedFile, boards, activeBoardFile, activeName,
-        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout } = state;
+        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions } = state;
 
     const isFirst = _firstRender;
     if (isFirst) {
@@ -397,12 +420,17 @@ function render(state) {
     const actionBtns = document.getElementById('actionBtns');
     actionBtns.innerHTML = '';
     ['build', 'flash'].forEach(cmd => {
-        const label = cmd[0].toUpperCase() + cmd.slice(1);
-        actionBtns.appendChild(makeActionBtn(cmd, label, files, pickedFile, uris, cmdPreviews));
+        const cfg = actions?.[cmd] ?? { label: cmd[0].toUpperCase() + cmd.slice(1), color: '#4caf50' };
+        actionBtns.appendChild(makeActionBtn(cmd, cfg, files, pickedFile, uris, cmdPreviews));
     });
 
-    // RTT button tip
-    document.getElementById('rttBtn').dataset.tipCmd = cmdPreviews.rtt;
+    // RTT button
+    const rttBtn = document.getElementById('rttBtn');
+    rttBtn.dataset.tipCmd = cmdPreviews.rtt;
+    if (actions?.rtt) {
+        rttBtn.style.background = actions.rtt.color;
+        rttBtn.querySelector('.btn-label').textContent = actions.rtt.label;
+    }
 
     // Target dropdown
     document.getElementById('cs-val-target').textContent = pickedFile ? basename(pickedFile) : 'No files';

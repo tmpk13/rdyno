@@ -6,16 +6,13 @@
 </head>
 
 <body>
-  <div id="editHeader">
-    <button class="icon-btn edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()" title="Edit panel layout">&#x270E;</button>
-  </div>
+  
   <div id="sectionsContainer">
     <div class="panel-section" data-section="files">
       <div class="section-row">
         <span class="label">Files</span>
-        <div style="display:flex;gap:4px">
-          <button class="icon-btn" id="hiddenToggle" onclick="toggleHidden()" title="Toggle hidden files"
-            style="opacity:0.5">
+        <div style="display:flex; gap:4px">
+          <button class="icon-btn" id="hiddenToggle" onclick="toggleHidden()" title="Toggle hidden files">
             <img id="hiddenIcon" class="icon-svg">
           </button>
           <button class="icon-btn" onclick="spinRefresh('refreshIcon'); send('refresh')" title="Refresh file list">
@@ -121,6 +118,11 @@
       <div class="drop-menu"></div>
     </div>
   </template>
+
+  <div id="editHeader">
+    <button class="icon-btn edit-reset-btn" id="resetLayoutBtn" onclick="resetLayout()" title="Reset layout to default" style="display:none">&#x21BA;</button>
+    <button class="icon-btn edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()" title="Edit panel layout">&#x270E;</button>
+  </div>
 
   <script src="{{JS_URI}}"></script>
 </body>

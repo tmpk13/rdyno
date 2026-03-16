@@ -2,7 +2,6 @@
 - [ ] 
  -->
 
-
 - [ ] Add port selection
 - [ ] Bind loading on panel buttons to something
 - [ ] Add run commands option for toml
@@ -18,15 +17,14 @@
 - [ ] have config options in toml
 - [x] Add Port name overflow handling
 - [ ] Port should be saved as default in the .boards file
-- [ ] Make .boards folder a different name, and picker.toml
+- [x] Make .boards folder a different name, and picker.toml
 - [ ] Toggle button for run button in status bar
 - [x] Poll serial device state to see if still connected, while not doing a command
 - [x] On hover for 2 sec show the command for build/flash
 - [ ] Generate new projects
 - [ ] Add ability to name devices
-- [ ] Generate a `.rdyno` file if it does not exist
-- [ ] Add config items options
-- [ ] Have git repo for list of configs
+- [x] Generate a `.rdyno` file if it does not exist
+- [x] Have git repo for list of configs
 - [ ] Have folders for boards, split up the toml files
 - [ ] Add git files automatically, set rules
 - [ ] Add STOP feature probe-rs `probe-rs reset --halt`?
@@ -50,18 +48,30 @@
     - [ ] Adjustments stored in settings
 - [ ] Add examples section
 - [ ] Split up toml configs
-- [ ] Auto select main.rs as target
+- [ ] When no target is selected auto select main.rs as target. Have new target saved on swapping
 - [ ] Use flex layout for better responsiveness
-- [ ] Separate icons for each action
-- [ ] Have options in board toml for new actions, have actions set in toml
-- [ ] Refresh is a square when loading in boards fix this
-    - [ ] When closing / opening the board panel the images disappear
-    - [ ] When closing / opening the new project the board gets unloaded
-    - [ ] New project should have its own board selection with search
+
+- [x] Refresh is a square when loading in boards fix this
+    - [x] When closing / opening the board panel the images disappear
+    - [x] When closing / opening the new project the board gets unloaded
+    - [x] New project section tab should have its own board selection with search
+
 - Edit mode
     - [ ] Make drag bar thicker
     - [ ] Make reset button
 - [ ] Animate check mark
+- [ ] Upload progress bar from probe-rs output
+- [ ] Reverse the hidden state
+
+- [ ] move edit to bottom add label
+
+- [ ] Fix hidden items count
+- [ ] Make hidden items button not low opacity by default
+
+- [ ] Separate icons/bg color for each action
+- [ ] Have options in board toml for new actions, have actions set in toml
+
+
 
 # ?
 - [ ] integrate installer for board toolchains??

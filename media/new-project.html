@@ -2,16 +2,15 @@
 <html>
 <head>
   <link rel="stylesheet" href="{{CSS_URI}}">
-  <style>
-    .np-board { font-size:12px; opacity:0.75; margin:0 0 8px; }
-    .np-hint  { font-size:12px; opacity:0.55; font-style:italic; margin:0; }
-    code { font-family: var(--vscode-editor-font-family, monospace); }
-  </style>
 </head>
 <body>
+  <div class="section-row">
+    <span class="label">Board</span>
+  </div>
+  <input id="np-search" type="text" placeholder="Search boards&#8230;" oninput="filterBoards(this.value)" autocomplete="off" spellcheck="false">
+  <div id="np-board-list" class="lib-list" style="margin-bottom:8px;max-height:200px"></div>
   <p class="np-hint" id="np-hint">Select a board with a <code>[new_project]</code> config to scaffold a project.</p>
-  <div id="np-board" style="display:none">
-    <p class="np-board">Board: <strong id="np-board-name"></strong></p>
+  <div id="np-action" style="display:none">
     <button onclick="send('newProject')">New Project&#8230;</button>
   </div>
   <script src="{{JS_URI}}"></script>

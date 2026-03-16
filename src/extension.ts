@@ -25,11 +25,13 @@ export function activate(ctx: vscode.ExtensionContext) {
     ),
     vscode.window.registerWebviewViewProvider(
       NewProjectPanelProvider.viewType,
-      new NewProjectPanelProvider(ctx)
+      new NewProjectPanelProvider(ctx),
+      { webviewOptions: { retainContextWhenHidden: true } }
     ),
     vscode.window.registerWebviewViewProvider(
       BoardLibraryPanelProvider.viewType,
-      new BoardLibraryPanelProvider(ctx)
+      new BoardLibraryPanelProvider(ctx),
+      { webviewOptions: { retainContextWhenHidden: true } }
     ),
   );
 }
