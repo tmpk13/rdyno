@@ -41,12 +41,13 @@
     - [ ] `probe-rs complete install` on linux 
     - [ ] Read `bin` file from `Cargo.toml`
     - [ ] Use dev container
+    - [ ] rust-toolchain.toml
 
-- [ ] Toggle button that turns on edit mode where every element can be toggled and rearranged
-    - [ ] Only in main panel
-    - [ ] Turn off UI function of elements during this
-    - [ ] Adjustments stored in settings
-- [ ] Add examples section
+- [x] Toggle button that turns on edit mode where every element can be toggled and rearranged
+    - [x] Only in main panel
+    - [x] Turn off UI function of elements during this
+    - [x] Adjustments stored in toml
+
 - [ ] Split up toml configs
 - [ ] When no target is selected auto select main.rs as target. Have new target saved on swapping
 - [ ] Use flex layout for better responsiveness
@@ -71,6 +72,7 @@
 - [x] Separate icons/bg color for each action
 - [x] Have options in board toml for new actions, have actions set in toml
 
+- [ ] Add examples section
 
 
 # ?
