@@ -63,13 +63,13 @@
 - [ ] Upload progress bar from probe-rs output
 - [ ] Reverse the hidden state
 
-- [ ] move edit to bottom add label
+- [x] move edit to bottom add label
 
 - [ ] Fix hidden items count
 - [ ] Make hidden items button not low opacity by default
 
-- [ ] Separate icons/bg color for each action
-- [ ] Have options in board toml for new actions, have actions set in toml
+- [x] Separate icons/bg color for each action
+- [x] Have options in board toml for new actions, have actions set in toml
 
 
 

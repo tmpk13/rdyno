@@ -23,6 +23,11 @@ export interface ActionConfig {
   color?: string;
 }
 
+export interface PanelLayout {
+  order: string[];
+  hidden: string[];
+}
+
 export interface BoardConfig {
   board: { name: string; chip: string; target: string };
   probe: { protocol: string; speed: number; port?: string };
@@ -31,10 +36,12 @@ export interface BoardConfig {
   run?: { command?: string };
   new_project?: NewProjectConfig;
   actions?: Record<string, ActionConfig>;
+  layout?: PanelLayout;
 }
 
 let activeBoard: BoardConfig | undefined;
 let activeBoardFile: string | undefined;
+let activeBoardPath: string | undefined;
 let portOverride: string | undefined;
 
 const DEFAULT_BOARD_TOML = `[board]
@@ -95,25 +102,23 @@ export function setDefaultBoardFile(filename: string): void {
   writeRdynoToml(data);
 }
 
-export interface PanelLayout {
-  order: string[];
-  hidden: string[];
-}
-
 export function getLayout(): PanelLayout | undefined {
-  const data = readRdynoToml();
-  const layout = data.layout as { order?: unknown; hidden?: unknown } | undefined;
+  const layout = activeBoard?.layout;
   if (!layout) { return undefined; }
   return {
-    order: Array.isArray(layout.order) ? layout.order as string[] : [],
-    hidden: Array.isArray(layout.hidden) ? layout.hidden as string[] : [],
+    order: Array.isArray(layout.order) ? layout.order : [],
+    hidden: Array.isArray(layout.hidden) ? layout.hidden : [],
   };
 }
 
 export function setLayout(layout: PanelLayout): void {
-  const data = readRdynoToml();
+  if (!activeBoardPath || !activeBoard) { return; }
+  activeBoard.layout = layout;
+  let data: TOML.JsonMap;
+  try { data = TOML.parse(fs.readFileSync(activeBoardPath, "utf-8")) as TOML.JsonMap; }
+  catch { data = {}; }
   data.layout = layout as unknown as TOML.JsonMap;
-  writeRdynoToml(data);
+  fs.writeFileSync(activeBoardPath, TOML.stringify(data), "utf-8");
 }
 
 export function autoSelectBoard(): BoardConfig | undefined {
@@ -152,6 +157,7 @@ export function selectBoardByFile(filename: string): BoardConfig | undefined {
   const raw = fs.readFileSync(filePath, "utf-8");
   activeBoard = TOML.parse(raw) as unknown as BoardConfig;
   activeBoardFile = filename;
+  activeBoardPath = filePath;
   return activeBoard;
 }
 

@@ -14,6 +14,7 @@ const DEFAULT_ORDER = ['files', 'actions', 'rtt', 'target', 'config'];
 
 let _editMode = false;
 let _layout = { order: [...DEFAULT_ORDER], hidden: [] };
+let _tomlLayout = null;
 let _dragSectionId = null;
 
 function applyLayout() {
@@ -47,9 +48,11 @@ function toggleEditMode() {
 }
 
 function resetLayout() {
-    _layout = { order: [...DEFAULT_ORDER], hidden: [] };
+    _layout = _tomlLayout
+        ? { order: [..._tomlLayout.order], hidden: [..._tomlLayout.hidden] }
+        : { order: [...DEFAULT_ORDER], hidden: [] };
     applyLayout();
-    // Rebuild edit bars with the reset state
+    // Rebuild edit bars to reflect the restored state
     const container = document.getElementById('sectionsContainer');
     container.querySelectorAll('.edit-bar').forEach(b => b.remove());
     container.querySelectorAll('.panel-section').forEach(el => {
@@ -61,7 +64,7 @@ function resetLayout() {
         el.removeEventListener('drop', onSectionDrop);
     });
     enterEditMode();
-    send('saveLayout', _layout);
+    // No save here — saving happens when the user exits edit mode
 }
 
 function enterEditMode() {
@@ -242,9 +245,9 @@ function toggleHidden() {
     const btn = document.getElementById('hiddenToggle');
     section.style.display = _isHiddenOpen ? 'block' : 'none';
     const hasHidden = STATE ? STATE.hiddenFiles.length > 0 : false;
-    btn.style.opacity = (_isHiddenOpen || hasHidden) ? '0.5' : '1';
+    btn.style.opacity = (_isHiddenOpen || hasHidden) ? '1' : '0.5';
     const hiddenIcon = document.getElementById('hiddenIcon');
-    if (hiddenIcon && _uris) {
+    if (hiddenIcon && _uris && !hasHidden) {
         hiddenIcon.src = _isHiddenOpen ? _uris.eyeSlash : _uris.eye;
     }
 }
@@ -374,6 +377,9 @@ function render(state) {
     const { files, hiddenFiles, pickedFile, boards, activeBoardFile, activeName,
         effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions } = state;
 
+    // Always track the toml layout so reset knows what to restore to
+    _tomlLayout = layout;
+
     const isFirst = _firstRender;
     if (isFirst) {
         _firstRender = false;
@@ -408,13 +414,20 @@ function render(state) {
     // Hidden toggle button
     const hiddenToggle = document.getElementById('hiddenToggle');
     hiddenToggle.style.opacity = (_isHiddenOpen || hiddenFiles.length > 0) ? '1' : '0.5';
+    const hiddenIconEl = document.getElementById('hiddenIcon');
     let hiddenBadge = hiddenToggle.querySelector('.hidden-badge');
     if (!hiddenBadge) {
         hiddenBadge = document.createElement('span');
         hiddenBadge.className = 'hidden-badge';
         hiddenToggle.appendChild(hiddenBadge);
     }
-    hiddenBadge.textContent = hiddenFiles.length > 0 ? ` ${hiddenFiles.length}` : '';
+    if (hiddenFiles.length > 0) {
+        hiddenIconEl.style.display = 'none';
+        hiddenBadge.textContent = hiddenFiles.length;
+    } else {
+        hiddenIconEl.style.display = '';
+        hiddenBadge.textContent = '';
+    }
 
     // Action buttons
     const actionBtns = document.getElementById('actionBtns');
