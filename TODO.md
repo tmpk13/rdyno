@@ -30,4 +30,4 @@
 - [ ] Have folders for boards, split up the toml files
 - [ ] Add git files automatically, set rules
 - [ ] Add STOP feature probe-rs `probe-rs reset --halt`?
-- [ ] 
+- [ ] Make static reload button rotate

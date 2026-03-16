@@ -455,7 +455,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
           const btn = b.installed
             ? \`<button class="lib-added" disabled>✓</button>\`
             : \`<button class="lib-add" data-board="\${esc(b.name)}" onclick="addBoard(\${JSON.stringify(b.name)},\${JSON.stringify(b.downloadUrl)})">+</button>\`;
-          return \`<div class="lib-item"><span class="lib-name" title="\${esc(b.name)}">\${esc(b.name.replace(/\\.toml$/, ''))}</span>\${btn}</div>\`;
+          return \`<div class="lib-item"><span class="lib-name" title="\${esc(b.path)}">\${esc(b.path.replace(/\\.toml$/, ''))}</span>\${btn}</div>\`;
         }).join('');
         document.getElementById('content').innerHTML = \`<div class="lib-list">\${rows}</div>\`;
       } else if (msg.command === 'libraryError') {
