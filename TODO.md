@@ -81,5 +81,9 @@
 - [ ] Verify the configs for new project are being used
 - [ ] Remove board/ from boards
 
+- [ ] Don't use vscode tabs unless they can be made larger
+
+- [ ] sdk defaults needs to be generated
+
 # ?
 - [ ] integrate installer for board toolchains??

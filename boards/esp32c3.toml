@@ -4,7 +4,7 @@ chip   = "esp32c3"
 target = "riscv32imc-esp-espidf"
 
 [run]
-command = "espflash flash --monitor"
+command = "cargo run --release"
 
 # ---------------------------------------------------------------------------
 # [new_project] — files and settings scaffolded when creating a new project

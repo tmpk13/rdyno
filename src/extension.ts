@@ -21,7 +21,8 @@ export function activate(ctx: vscode.ExtensionContext) {
   ctx.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       BoardPanelProvider.viewType,
-      new BoardPanelProvider(ctx)
+      new BoardPanelProvider(ctx),
+      { webviewOptions: { retainContextWhenHidden: true } }
     ),
     vscode.window.registerWebviewViewProvider(
       NewProjectPanelProvider.viewType,

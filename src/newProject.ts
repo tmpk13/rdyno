@@ -59,13 +59,8 @@ export async function newProject(): Promise<void> {
         }
     );
 
-    const open = await vscode.window.showInformationMessage(
-        `Project "${name}" created for ${board.board.name}.`,
-        "Open Folder"
-    );
-    if (open === "Open Folder") {
-        vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(projectDir), { forceNewWindow: false });
-    }
+    vscode.window.showInformationMessage(`Project "${name}" created for ${board.board.name}.`);
+    vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(projectDir), { forceNewWindow: false });
 }
 
 function runCargoNew(parentDir: string, name: string): Promise<void> {
