@@ -73,7 +73,11 @@
 - [x] Have options in board toml for new actions, have actions set in toml
 
 - [ ] Add examples section
+- [ ] Swapping tabs removes UI elements from the board controls tab
+- [ ] Button for install probe-rs or command based on platform for user to run
 
+- [ ] Don't use swd by default on esp check others
+- [ ] poll for serial when auto is the port selection show the board that will be used name
 
 # ?
 - [ ] integrate installer for board toolchains??

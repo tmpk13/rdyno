@@ -10,7 +10,7 @@ const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
     rtt:   { label: "RTT Monitor", color: "#4caf50" },
 };
 import { getActiveFile, getCachedFiles, getHiddenFiles, hideFile, openFile, refreshFiles, reorderFiles, unhideFile } from "./filePicker";
-import { fetchLibraryList, fetchAndSaveBoard, isBoardCached, isBoardInWorkspace, copyBoardToWorkspace, removeBoard } from "./boardLibrary";
+import { fetchLibraryList, fetchAndSaveBoard, isBoardCached, isBoardInWorkspace, copyBoardToWorkspace, removeBoard, fetchBoardContent, getWorkspaceBoardContent, updateBoardInWorkspace } from "./boardLibrary";
 
 function loadHtml(ext: vscode.ExtensionContext, webview: vscode.Webview, htmlFile: string, jsFile: string): string {
     const mediaPath = vscode.Uri.joinPath(ext.extensionUri, "media");
@@ -238,6 +238,8 @@ export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
         view.webview.onDidReceiveMessage((msg) => {
             if (msg.command === "newProject") {
                 vscode.commands.executeCommand("rdyno.newProject");
+            } else if (msg.command === "refreshBoards") {
+                this.sendState();
             } else if (msg.command === "selectBoard") {
                 selectBoardByFile(msg.data);
                 setDefaultBoardFile(msg.data);
@@ -262,7 +264,7 @@ export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
                 boardName: board?.board.name ?? "no board selected",
                 boards: listBoards(),
                 activeBoardFile: getActiveBoardFile(),
-                uris: { drop: uri("imgs/drop.svg") },
+                uris: { drop: uri("imgs/drop.svg"), refresh: uri("imgs/refresh.svg") },
             },
         });
     }
@@ -301,10 +303,17 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
                     }
                     try {
                         const entries = await fetchLibraryList(repo);
-                        const withStatus = entries.map(e => ({
-                            ...e,
-                            cached: isBoardCached(e.name),
-                            inWorkspace: isBoardInWorkspace(e.name),
+                        const withStatus = await Promise.all(entries.map(async e => {
+                            const inWorkspace = isBoardInWorkspace(e.name);
+                            let hasUpdate = false;
+                            if (inWorkspace) {
+                                try {
+                                    const localContent = getWorkspaceBoardContent(e.name);
+                                    const remoteContent = await fetchBoardContent(e.downloadUrl);
+                                    hasUpdate = localContent !== undefined && localContent.trim() !== remoteContent.trim();
+                                } catch { /* ignore update check failure */ }
+                            }
+                            return { ...e, cached: isBoardCached(e.name), inWorkspace, hasUpdate };
                         }));
                         view.webview.postMessage({ command: "libraryList", data: withStatus });
                     } catch (err: unknown) {
@@ -336,6 +345,19 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
                         const errMsg = err instanceof Error ? err.message : String(err);
                         view.webview.postMessage({ command: "boardError", data: { name, error: errMsg } });
                         vscode.window.showErrorMessage(`Failed to add board to project: ${errMsg}`);
+                    }
+                    break;
+                }
+                case "updateBoard": {
+                    const { name, downloadUrl } = msg.data as { name: string; downloadUrl: string };
+                    try {
+                        await updateBoardInWorkspace(name, downloadUrl);
+                        view.webview.postMessage({ command: "boardUpdated", data: name });
+                        vscode.window.showInformationMessage(`Board updated: ${name}`);
+                    } catch (err: unknown) {
+                        const errMsg = err instanceof Error ? err.message : String(err);
+                        view.webview.postMessage({ command: "boardError", data: { name, error: errMsg } });
+                        vscode.window.showErrorMessage(`Failed to update board: ${errMsg}`);
                     }
                     break;
                 }

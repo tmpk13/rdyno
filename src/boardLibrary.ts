@@ -103,3 +103,22 @@ export function removeBoard(filename: string): void {
     const p = path.join(dir, filename);
     if (fs.existsSync(p)) { fs.unlinkSync(p); }
 }
+
+export async function fetchBoardContent(downloadUrl: string): Promise<string> {
+    return httpsGet(downloadUrl);
+}
+
+export function getWorkspaceBoardContent(filename: string): string | undefined {
+    const dir = getWorkspaceBoardDir();
+    if (!dir) { return undefined; }
+    const p = path.join(dir, filename);
+    try { return fs.readFileSync(p, "utf-8"); } catch { return undefined; }
+}
+
+export async function updateBoardInWorkspace(filename: string, downloadUrl: string): Promise<void> {
+    const content = await httpsGet(downloadUrl);
+    const dir = getWorkspaceBoardDir();
+    if (!dir) { throw new Error("No workspace open"); }
+    if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); }
+    fs.writeFileSync(path.join(dir, filename), content, "utf-8");
+}

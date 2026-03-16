@@ -79,10 +79,25 @@ function selectBoard(file) {
     send('selectBoard', file);
 }
 
+function spinRefresh(id) {
+    const el = document.getElementById(id);
+    if (!el) { return; }
+    el.classList.remove('spin-once');
+    void el.offsetWidth;
+    el.classList.add('spin-once');
+    el.addEventListener('animationend', () => el.classList.remove('spin-once'), { once: true });
+}
+
+function refreshBoards() {
+    spinRefresh('npRefreshIcon');
+    send('refreshBoards');
+}
+
 window.addEventListener('message', e => {
     const msg = e.data;
     if (msg.command === 'init') {
-        const { hasConfig, boards, activeBoardFile: abf } = msg.data;
+        const { hasConfig, boards, activeBoardFile: abf, uris } = msg.data;
+        if (uris?.refresh) { document.getElementById('npRefreshIcon').src = uris.refresh; }
         allBoards = boards || [];
         activeBoardFile = abf || null;
 

@@ -2,6 +2,7 @@ const vscode = acquireVsCodeApi();
 let CHECK_URI = '';
 let DOWN_URI = '';
 let PLUS_URI = '';
+let REFRESH_URI = '';
 
 let boardIndex = {};
 let allBoards = [];
@@ -10,8 +11,19 @@ function send(cmd, data) { vscode.postMessage({ command: cmd, data }); }
 function checkBtn(name) { return `<button class="lib-added" data-board="${esc(name)}" ondblclick="removeBoard(this)" title="Double-click to remove from project"><img src="${CHECK_URI}"></button>`; }
 function addBtn(name) { return `<button class="lib-add" data-board="${esc(name)}" onclick="addToProject(this)" title="Add to project"><img src="${PLUS_URI}"></button>`; }
 function downBtn(name, url) { return `<button class="lib-down" data-board="${esc(name)}" data-url="${esc(url)}" onclick="downloadBoard(this)" title="Download to cache"><img src="${DOWN_URI}"></button>`; }
-function stateBtn(b) { return b.inWorkspace ? checkBtn(b.name) : b.cached ? addBtn(b.name) : downBtn(b.name, b.downloadUrl); }
+function updateBtn(name, url) { return `<button class="lib-update" data-board="${esc(name)}" data-url="${esc(url)}" onclick="updateBoard(this)" title="Update to latest version"><img src="${REFRESH_URI}"></button>`; }
+function stateBtns(b) {
+    if (b.inWorkspace) {
+        return `<span class="lib-btns">${checkBtn(b.name)}${b.hasUpdate ? updateBtn(b.name, b.downloadUrl) : ''}</span>`;
+    }
+    return `<span class="lib-btns">${b.cached ? addBtn(b.name) : downBtn(b.name, b.downloadUrl)}</span>`;
+}
 function removeBoard(btn) { const name = btn.dataset.board; btn.disabled = true; send('removeBoard', name); }
+
+function findBtnsContainer(name) {
+    const btn = document.querySelector(`[data-board="${CSS.escape(name)}"]`);
+    return btn ? btn.closest('.lib-btns') : null;
+}
 
 // --- fuzzy search ---
 function trigrams(s) {
@@ -65,7 +77,7 @@ function renderList(boards) {
         return;
     }
     const rows = boards.map(b => {
-        return `<div class="lib-item"><span class="lib-name" title="${esc(b.path)}">${esc(b.path.replace(/\.toml$/, ''))}</span>${stateBtn(b)}</div>`;
+        return `<div class="lib-item"><span class="lib-name" title="${esc(b.path)}">${esc(b.path.replace(/\.toml$/, ''))}</span>${stateBtns(b)}</div>`;
     }).join('');
     document.getElementById('content').innerHTML = `<div class="lib-list">${rows}</div>`;
 }
@@ -109,12 +121,26 @@ function addToProject(btn) {
     send('addToProject', name);
 }
 
+function updateBoard(btn) {
+    const name = btn.dataset.board;
+    const downloadUrl = btn.dataset.url;
+    btn.disabled = true;
+    const img = btn.querySelector('img');
+    if (img) {
+        img.classList.remove('spin-once');
+        void img.offsetWidth;
+        img.classList.add('spin-once');
+    }
+    send('updateBoard', { name, downloadUrl });
+}
+
 window.addEventListener('message', e => {
     const msg = e.data;
     if (msg.command === 'setup') {
         CHECK_URI = msg.uris.check;
         DOWN_URI = msg.uris.down;
         PLUS_URI = msg.uris.plus;
+        REFRESH_URI = msg.uris.refresh;
         const refreshIcon = document.getElementById('refreshIcon');
         if (refreshIcon) { refreshIcon.src = msg.uris.refresh; }
         load();
@@ -134,23 +160,38 @@ window.addEventListener('message', e => {
           ${isConfig ? '<button class="icon-btn" onclick="send(\'openSettings\')">Open Settings</button>' : ''}`;
     } else if (msg.command === 'boardDownloaded') {
         const idx = allBoards.findIndex(b => b.name === msg.data);
-        if (idx !== -1) allBoards[idx] = { ...allBoards[idx], cached: true };
-        const btn = document.querySelector('[data-board="' + CSS.escape(msg.data) + '"]');
-        if (btn) { btn.outerHTML = addBtn(msg.data); }
+        if (idx !== -1) {
+            allBoards[idx] = { ...allBoards[idx], cached: true };
+            const c = findBtnsContainer(msg.data);
+            if (c) { c.outerHTML = stateBtns(allBoards[idx]); }
+        }
     } else if (msg.command === 'boardAddedToProject') {
         const idx = allBoards.findIndex(b => b.name === msg.data);
-        if (idx !== -1) allBoards[idx] = { ...allBoards[idx], inWorkspace: true };
-        const btn = document.querySelector('[data-board="' + CSS.escape(msg.data) + '"]');
-        if (btn) { btn.outerHTML = checkBtn(msg.data); }
+        if (idx !== -1) {
+            allBoards[idx] = { ...allBoards[idx], inWorkspace: true };
+            const c = findBtnsContainer(msg.data);
+            if (c) { c.outerHTML = stateBtns(allBoards[idx]); }
+        }
     } else if (msg.command === 'boardRemoved') {
         const idx = allBoards.findIndex(b => b.name === msg.data);
-        if (idx !== -1) allBoards[idx] = { ...allBoards[idx], inWorkspace: false };
-        const btn = document.querySelector('[data-board="' + CSS.escape(msg.data) + '"]');
-        if (btn && idx !== -1) { btn.outerHTML = addBtn(allBoards[idx].name); }
+        if (idx !== -1) {
+            allBoards[idx] = { ...allBoards[idx], inWorkspace: false };
+            const c = findBtnsContainer(msg.data);
+            if (c) { c.outerHTML = stateBtns(allBoards[idx]); }
+        }
+    } else if (msg.command === 'boardUpdated') {
+        const idx = allBoards.findIndex(b => b.name === msg.data);
+        if (idx !== -1) {
+            allBoards[idx] = { ...allBoards[idx], hasUpdate: false };
+            const c = findBtnsContainer(msg.data);
+            if (c) { c.outerHTML = stateBtns(allBoards[idx]); }
+        }
     } else if (msg.command === 'boardError') {
         const idx = allBoards.findIndex(b => b.name === msg.data.name);
-        const btn = document.querySelector('[data-board="' + CSS.escape(msg.data.name) + '"]');
-        if (btn && idx !== -1) { btn.outerHTML = stateBtn(allBoards[idx]); }
+        if (idx !== -1) {
+            const c = findBtnsContainer(msg.data.name);
+            if (c) { c.outerHTML = stateBtns(allBoards[idx]); }
+        }
     }
 });
 

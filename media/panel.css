@@ -104,6 +104,13 @@ body {
     height: 1rem;
 }
 
+.lib-btns {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
 .lib-added {
     padding: 0;
     background-color: #4caf50;
@@ -117,6 +124,26 @@ body {
     align-items: center;
     justify-content: center;
     animation: lib-added-pop 0.25s ease-out;
+}
+
+.lib-update {
+    padding: 0;
+    margin: 0;
+    background-color: #b07d18;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lib-update img {
+    padding: 0;
+    margin: 0;
+    display: block;
+    width: 1rem;
+    height: 1rem;
 }
 
 @keyframes lib-added-pop {

@@ -6,6 +6,9 @@
 <body class="sub-panel">
   <div class="section-row">
     <span class="label">Board</span>
+    <button class="icon-btn" onclick="refreshBoards()" title="Refresh board list">
+      <img id="npRefreshIcon" class="icon-svg">
+    </button>
   </div>
   <input id="np-search" type="text" placeholder="Search boards&#8230;" oninput="filterBoards(this.value)" autocomplete="off" spellcheck="false">
   <div id="np-board-list" class="lib-list" style="margin-bottom:8px;max-height:200px"></div>
