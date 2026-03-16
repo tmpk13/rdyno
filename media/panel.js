@@ -5,6 +5,7 @@ let STATE = null;
 let _isConfigOpen = false;
 let _isHiddenOpen = false;
 let _firstRender = true;
+let _uris = null;
 
 function safeHtml(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -68,9 +69,23 @@ function toggleHidden() {
     section.style.display = _isHiddenOpen ? 'block' : 'none';
     const hasHidden = STATE ? STATE.hiddenFiles.length > 0 : false;
     btn.style.opacity = (_isHiddenOpen || hasHidden) ? '1' : '0.5';
+    const hiddenIcon = document.getElementById('hiddenIcon');
+    if (hiddenIcon && _uris) {
+        hiddenIcon.src = _isHiddenOpen ? _uris.eyeSlash : _uris.eye;
+    }
+}
+
+function spinRefresh(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('spin-once');
+    void el.offsetWidth;
+    el.classList.add('spin-once');
+    el.addEventListener('animationend', () => el.classList.remove('spin-once'), { once: true });
 }
 
 function refreshPorts() {
+    spinRefresh('refreshPortIcon');
     send('listPorts');
 }
 
@@ -86,8 +101,10 @@ function pickPort(val, label) {
 }
 
 function setUris(uris) {
+    _uris = uris;
     const img = id => document.getElementById(id);
     img('refreshIcon').src = uris.refresh;
+    img('hiddenIcon').src = uris.eye;
     img('rttRunIcon').src = uris.run;
     img('rttCheckIcon').src = uris.check;
     img('dropTarget').src = uris.drop;
@@ -131,7 +148,13 @@ function render(state) {
     // Hidden toggle button
     const hiddenToggle = document.getElementById('hiddenToggle');
     hiddenToggle.style.opacity = (_isHiddenOpen || hiddenFiles.length > 0) ? '1' : '0.5';
-    hiddenToggle.textContent = (hiddenFiles.length > 0 ? ` ${hiddenFiles.length}` : '');
+    let hiddenBadge = hiddenToggle.querySelector('.hidden-badge');
+    if (!hiddenBadge) {
+        hiddenBadge = document.createElement('span');
+        hiddenBadge.className = 'hidden-badge';
+        hiddenToggle.appendChild(hiddenBadge);
+    }
+    hiddenBadge.textContent = hiddenFiles.length > 0 ? ` ${hiddenFiles.length}` : '';
 
     // Action buttons (split vs simple based on file count)
     document.getElementById('actionBtns').innerHTML = ['build', 'flash'].map(cmd => {

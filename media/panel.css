@@ -323,6 +323,11 @@ button:hover {
     }
 }
 
+/* One-shot spin on click for refresh icons */
+.icon-btn img.spin-once {
+    animation: spin 0.4s linear;
+}
+
 button {
     position: relative;
 }

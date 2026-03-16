@@ -138,6 +138,8 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     refresh: uri("imgs/refresh.svg"),
                     check: uri("imgs/check.svg"),
                     drop: uri("imgs/drop.svg"),
+                    eye: uri("imgs/eye.svg"),
+                    eyeSlash: uri("imgs/eye-slash.svg"),
                 },
             },
         });

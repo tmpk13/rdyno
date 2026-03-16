@@ -38,5 +38,16 @@
 - [ ] Add remove all local button
 - [ ] Add setting for disable remote repo
 - [ ] Separate the html from the js 
+
+- [ ] Button that asks to install probe-rs if the user doesn't have it
+    - [ ] `probe-rs complete install` on linux 
+    - [ ] Read `bin` file from `Cargo.toml`
+    - [ ] Use dev container
+
+- [ ] Toggle button that turns on edit mode where every element can be toggled and rearranged
+    - [ ] Only in main panel
+    - [ ] Turn off UI function of elements during this
+    - [ ] Settings stored in settings
+
 # ?
 - [ ] integrate installer for board toolchains??

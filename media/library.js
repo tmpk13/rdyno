@@ -81,7 +81,17 @@ function filterBoards(query) {
     renderList(scored.map(x => x.b));
 }
 
+function spinImg(id) {
+    const el = document.getElementById(id);
+    if (!el) { return; }
+    el.classList.remove('spin-once');
+    void el.offsetWidth;
+    el.classList.add('spin-once');
+    el.addEventListener('animationend', () => el.classList.remove('spin-once'), { once: true });
+}
+
 function load() {
+    spinImg('refreshIcon');
     document.getElementById('content').innerHTML = '<div class="lib-status">Loading…</div>';
     send('fetchLibrary');
 }

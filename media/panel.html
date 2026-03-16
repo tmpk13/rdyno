@@ -13,8 +13,9 @@
         style="opacity:0.5">
         <img id="hiddenIcon" class="icon-svg">
       </button>
-      <button class="icon-btn" onclick="send('refresh')" title="Refresh file list"><img id="refreshIcon"
-          class="icon-svg"></button>
+      <button class="icon-btn" onclick="spinRefresh('refreshIcon'); send('refresh')" title="Refresh file list">
+        <img id="refreshIcon" class="icon-svg">
+      </button>
     </div>
   </div>
   <div class="file-list" id="fileList"></div>
