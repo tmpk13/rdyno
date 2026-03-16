@@ -3,6 +3,19 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 
+let _globalBoardsDir: string | undefined;
+
+export function initBoardLibrary(globalStoragePath: string): void {
+    _globalBoardsDir = globalStoragePath;
+    if (!fs.existsSync(globalStoragePath)) {
+        fs.mkdirSync(globalStoragePath, { recursive: true });
+    }
+}
+
+export function getGlobalBoardsDir(): string | undefined {
+    return _globalBoardsDir;
+}
+
 export interface LibraryEntry {
     name: string;       // filename only, e.g. "stm32f4.toml"
     path: string;       // full repo path, e.g. "stm32/stm32f4.toml"
@@ -53,16 +66,40 @@ export async function fetchAndSaveBoard(filename: string, downloadUrl: string): 
 }
 
 export function getBoardsInstallDir(): string {
+    if (_globalBoardsDir) { return _globalBoardsDir; }
     const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     const configDir = vscode.workspace.getConfiguration("embeddedRust").get<string>("boardConfigDir", ".rdyno");
     return path.join(wsRoot ?? ".", configDir);
 }
 
-export function isBoardInstalled(filename: string): boolean {
+export function isBoardCached(filename: string): boolean {
     return fs.existsSync(path.join(getBoardsInstallDir(), filename));
 }
 
+function getWorkspaceBoardDir(): string | undefined {
+    const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!wsRoot) { return undefined; }
+    const configDir = vscode.workspace.getConfiguration("embeddedRust").get<string>("boardConfigDir", ".rdyno");
+    return path.join(wsRoot, configDir);
+}
+
+export function isBoardInWorkspace(filename: string): boolean {
+    const dir = getWorkspaceBoardDir();
+    return !!dir && fs.existsSync(path.join(dir, filename));
+}
+
+export function copyBoardToWorkspace(filename: string): void {
+    const src = path.join(getBoardsInstallDir(), filename);
+    if (!fs.existsSync(src)) { throw new Error(`Board not cached: ${filename}`); }
+    const dir = getWorkspaceBoardDir();
+    if (!dir) { throw new Error("No workspace open"); }
+    if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); }
+    fs.copyFileSync(src, path.join(dir, filename));
+}
+
 export function removeBoard(filename: string): void {
-    const p = path.join(getBoardsInstallDir(), filename);
+    const dir = getWorkspaceBoardDir();
+    if (!dir) { return; }
+    const p = path.join(dir, filename);
     if (fs.existsSync(p)) { fs.unlinkSync(p); }
 }

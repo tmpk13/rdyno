@@ -49,8 +49,14 @@ body {
     align-items: center;
     justify-content: center;
 }
-.lib-add img {
+
+.lib-add img,
+.lib-added img {
+    padding: 0;
+    margin: 0;
     display: block;
+    width: 1rem;
+    height: 1rem;
 }
 
 .lib-added {
@@ -65,10 +71,6 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-}
-
-.lib-added img {
-    display: block;
 }
 
 .lib-list {
@@ -208,7 +210,9 @@ button:hover {
     height: 2rem;
     /* padding: 2px 8px; */
     margin: 0;
-
+    width: auto;
+    padding: 4px 10px;
+    font-size: 12px;
 }
 
 /* Scrollable list of files */

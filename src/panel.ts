@@ -418,7 +418,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
     private getHtml(): string {
         const cssUri = this.view!.webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, "media", "panel.css"));
         const checkUri = this.view!.webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, "imgs", "check.svg"));
-        const plusUri = this.view!.webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, "imgs", "plus.svg"));
+        const addUri = this.view!.webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, "imgs", "down.svg"));
         return /*html*/`<!DOCTYPE html>
 <html>
 <head>
@@ -434,12 +434,12 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
   <script>
     const vscode = acquireVsCodeApi();
     const CHECK_URI = ${JSON.stringify(checkUri.toString())};
-    const PLUS_URI = ${JSON.stringify(plusUri.toString())};
+    const PLUS_URI = ${JSON.stringify(addUri.toString())};
     let boardIndex = {};
     let allBoards = [];
     function send(cmd, data) { vscode.postMessage({ command: cmd, data }); }
     function checkBtn(name) { return \`<button class="lib-added" data-board="\${esc(name)}" ondblclick="removeBoard(this)" title="Double-click to remove"><img src="\${CHECK_URI}"></button>\`; }
-    function plusBtn(name, url) { return \`<button class="lib-add" data-board="\${esc(name)}" data-url="\${esc(url)}" onclick="addBoard(this)"><img src="\${PLUS_URI}" style="width:12px;height:12px;display:block"></button>\`; }
+    function plusBtn(name, url) { return \`<button class="lib-add" data-board="\${esc(name)}" data-url="\${esc(url)}" onclick="addBoard(this)"><img src="\${PLUS_URI}"></button>\`; }
     function removeBoard(btn) { const name = btn.dataset.board; btn.disabled = true; send('removeBoard', name); }
 
     // --- fuzzy search ---
@@ -538,7 +538,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
         const isConfig = msg.data.includes('No repo configured');
         document.getElementById('content').innerHTML = \`
           <div class="lib-error">\${esc(msg.data)}</div>
-          \${isConfig ? '<button class="icon-btn" style="width:auto;padding:4px 10px;font-size:12px" onclick="send(\\'openSettings\\')">Open Settings</button>' : ''}\`;
+          \${isConfig ? '<button class="icon-btn" onclick="send(\\'openSettings\\')">Open Settings</button>' : ''}\`;
       } else if (msg.command === 'boardAdded') {
         const idx = allBoards.findIndex(b => b.name === msg.data);
         if (idx !== -1) allBoards[idx] = { ...allBoards[idx], installed: true };
@@ -551,7 +551,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
         if (btn) { btn.outerHTML = plusBtn(msg.data, boardIndex[msg.data] || ''); }
       } else if (msg.command === 'boardError') {
         const btn = document.querySelector('[data-board="' + CSS.escape(msg.data.name) + '"]');
-        if (btn) { btn.disabled = false; btn.innerHTML = \`<img src="\${PLUS_URI}" style="width:12px;height:12px;display:block">\`; }
+        if (btn) { btn.disabled = false; btn.innerHTML = \`<img src="\${PLUS_URI}">\`; }
       }
     });
 

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import * as TOML from "@iarna/toml";
+import { getGlobalBoardsDir } from "./boardLibrary";
 
 export interface NewProjectFile {
   path: string;
@@ -87,14 +88,26 @@ export function autoSelectBoard(): BoardConfig | undefined {
 }
 
 export function listBoards(): string[] {
-  const dir = getBoardDir();
-  if (!fs.existsSync(dir)) { return []; }
-  return fs.readdirSync(dir).filter((f) => f.endsWith(".toml") && f !== "picker.toml");
+  const dirs = [getBoardDir(), getGlobalBoardsDir()].filter(Boolean) as string[];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const dir of dirs) {
+    if (!fs.existsSync(dir)) { continue; }
+    for (const f of fs.readdirSync(dir)) {
+      if (f.endsWith(".toml") && f !== "picker.toml" && f !== "rdyno.toml" && !seen.has(f)) {
+        seen.add(f);
+        result.push(f);
+      }
+    }
+  }
+  return result;
 }
 
 export function selectBoardByFile(filename: string): BoardConfig | undefined {
-  const dir = getBoardDir();
-  const filePath = path.join(dir, filename);
+  const wsPath = path.join(getBoardDir(), filename);
+  const globalDir = getGlobalBoardsDir();
+  const globalPath = globalDir ? path.join(globalDir, filename) : undefined;
+  const filePath = fs.existsSync(wsPath) ? wsPath : (globalPath && fs.existsSync(globalPath) ? globalPath : wsPath);
   if (!fs.existsSync(filePath)) {
     vscode.window.showErrorMessage(`Board config not found: ${filePath}`);
     return;

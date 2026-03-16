@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { selectBoard, ensureBoardDir } from "./boardConfig";
+import { initBoardLibrary } from "./boardLibrary";
 import { build } from "./builder";
 import { flash } from "./flasher";
 import { startRtt } from "./rtt";
@@ -8,6 +9,7 @@ import { BoardPanelProvider, NewProjectPanelProvider, BoardLibraryPanelProvider 
 
 
 export function activate(ctx: vscode.ExtensionContext) {
+  initBoardLibrary(ctx.globalStorageUri.fsPath);
   ensureBoardDir();
   ctx.subscriptions.push(
     vscode.commands.registerCommand("embeddedRust.selectBoard", selectBoard),
