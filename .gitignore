@@ -2,6 +2,9 @@ node_modules/
 dist/
 out/
 *.vsix
+.vscode/
 .vscode-test/
+.vscode-test.mjs
 bun.lock
 .bun/
+node_modules/**
