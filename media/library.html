@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="{{CSS_URI}}">
+</head>
+<body>
+  <div class="section-row">
+    <span class="label">Board Library</span>
+    <button class="icon-btn" onclick="load()" title="Refresh">
+      <img id="refreshIcon" class="icon-svg">
+    </button>
+  </div>
+  <input id="search" type="text" placeholder="Search boards&#8230;" oninput="filterBoards(this.value)" autocomplete="off" spellcheck="false">
+  <div id="content"><div class="lib-status">Loading&#8230;</div></div>
+  <script src="{{JS_URI}}"></script>
+</body>
+</html>
