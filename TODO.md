@@ -52,8 +52,16 @@
 - [ ] Split up toml configs
 - [ ] Auto select main.rs as target
 - [ ] Use flex layout for better responsiveness
-- [ ] Separate icons for each command
+- [ ] Separate icons for each action
 - [ ] Have options in board toml for new actions, have actions set in toml
+- [ ] Refresh is a square when loading in boards fix this
+    - [ ] When closing / opening the board panel the images disappear
+    - [ ] When closing / opening the new project the board gets unloaded
+    - [ ] New project should have its own board selection with search
+- Edit mode
+    - [ ] Make drag bar thicker
+    - [ ] Make reset button
+- [ ] Animate check mark
 
 # ?
 - [ ] integrate installer for board toolchains??
