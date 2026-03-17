@@ -1,4 +1,4 @@
-# RDyno
+# rustdyno
 Rust embedded runner for VSCode
 
 <img width="400rem" alt="Rust crab and dynosaur" src="imgs/dyno.svg">
