@@ -9,7 +9,7 @@ export async function build(): Promise<vscode.TaskExecution | undefined> {
     { type: "cargo", task: "build" },
     vscode.TaskScope.Workspace,
     "cargo build",
-    "rdyno",
+    "rustdyno",
     new vscode.ShellExecution("cargo", [
       "build",
       "--release",

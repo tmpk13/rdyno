@@ -23,7 +23,7 @@
 - [x] On hover for 2 sec show the command for build/flash
 - [ ] Generate new projects
 - [ ] Add ability to name devices
-- [x] Generate a `.rdyno` file if it does not exist
+- [x] Generate a `.rustdyno` file if it does not exist
 - [x] Have git repo for list of configs
 - [ ] Have folders for boards, split up the toml files
 - [ ] Add git files automatically, set rules
@@ -98,7 +98,7 @@
     - [ ] Programming ✔ 100% [####################]  17.00 KiB @  17.86 KiB/s (took 1s)
     - [ ] Show check on finish
 
-
+- [ ] If no .rustdyno does not exist have new project show up for current or new dir
 
 # ?
 - [ ] integrate installer for board toolchains??

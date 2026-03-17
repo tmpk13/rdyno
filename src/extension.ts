@@ -12,11 +12,11 @@ export function activate(ctx: vscode.ExtensionContext) {
   initBoardLibrary(ctx.globalStorageUri.fsPath);
   ensureBoardDir(ctx.extensionUri.fsPath);
   ctx.subscriptions.push(
-    vscode.commands.registerCommand("rdyno.selectBoard", selectBoard),
-    vscode.commands.registerCommand("rdyno.build", build),
-    vscode.commands.registerCommand("rdyno.flash", flash),
-    vscode.commands.registerCommand("rdyno.rtt", startRtt),
-    vscode.commands.registerCommand("rdyno.newProject", newProject),
+    vscode.commands.registerCommand("rustdyno.selectBoard", selectBoard),
+    vscode.commands.registerCommand("rustdyno.build", build),
+    vscode.commands.registerCommand("rustdyno.flash", flash),
+    vscode.commands.registerCommand("rustdyno.rtt", startRtt),
+    vscode.commands.registerCommand("rustdyno.newProject", newProject),
   );
   ctx.subscriptions.push(
     vscode.window.registerWebviewViewProvider(

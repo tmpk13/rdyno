@@ -58,12 +58,12 @@ export function ensureBoardDir(extensionPath: string): void {
 
 function getBoardDir(): string {
   const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  const configDir = vscode.workspace.getConfiguration("rdyno").get<string>("boardConfigDir", ".rdyno");
+  const configDir = vscode.workspace.getConfiguration("rustdyno").get<string>("boardConfigDir", ".rustdyno");
   return path.join(wsRoot ?? ".", configDir);
 }
 
 function pickerTomlPath(): string {
-  return path.join(getBoardDir(), "rdyno.toml");
+  return path.join(getBoardDir(), "rustdyno.toml");
 }
 
 function readRdynoToml(): TOML.JsonMap {
@@ -136,7 +136,7 @@ export function listBoards(): string[] {
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) { continue; }
     for (const f of fs.readdirSync(dir)) {
-      if (f.endsWith(".toml") && f !== "picker.toml" && f !== "rdyno.toml" && !seen.has(f)) {
+      if (f.endsWith(".toml") && f !== "picker.toml" && f !== "rustdyno.toml" && !seen.has(f)) {
         seen.add(f);
         result.push(f);
       }

@@ -1,5 +1,5 @@
 {
-  "name": "rdyno",
+  "name": "rustdyno",
   "version": "0.0.1",
   "main": "./dist/extension.js",
   "devDependencies": {
@@ -22,83 +22,83 @@
   "contributes": {
     "commands": [
       {
-        "command": "rdyno.selectBoard",
-        "title": "rdyno: Select Board"
+        "command": "rustdyno.selectBoard",
+        "title": "rustdyno: Select Board"
       },
       {
-        "command": "rdyno.build",
-        "title": "rdyno: Build"
+        "command": "rustdyno.build",
+        "title": "rustdyno: Build"
       },
       {
-        "command": "rdyno.flash",
-        "title": "rdyno: Flash"
+        "command": "rustdyno.flash",
+        "title": "rustdyno: Flash"
       },
       {
-        "command": "rdyno.rtt",
-        "title": "rdyno: RTT Monitor"
+        "command": "rustdyno.rtt",
+        "title": "rustdyno: RTT Monitor"
       },
       {
-        "command": "rdyno.newProject",
-        "title": "rdyno: New Project"
+        "command": "rustdyno.newProject",
+        "title": "rustdyno: New Project"
       }
     ],
     "configuration": {
-      "title": "rdyno",
+      "title": "rustdyno",
       "properties": {
-        "rdyno.boardConfigDir": {
+        "rustdyno.boardConfigDir": {
           "type": "string",
-          "default": ".rdyno",
+          "default": ".rustdyno",
           "description": "Directory containing board TOML configs"
         },
-        "rdyno.probersPath": {
+        "rustdyno.probersPath": {
           "type": "string",
           "default": "probe-rs",
           "description": "Path to probe-rs binary"
         },
-        "rdyno.pickerGlobs": {
+        "rustdyno.pickerGlobs": {
           "type": "array",
           "items": { "type": "string" },
           "default": ["src/**/*.rs"],
           "description": "Glob patterns (relative to workspace root) for the file picker"
         },
-        "rdyno.boardLibraryRepo": {
+        "rustdyno.boardLibraryRepo": {
           "type": "string",
-          "default": "tmpk13/rdyno",
-          "description": "GitHub repo (owner/repo) to use as the board library, e.g. \"my-org/rdyno-boards\""
+          "default": "tmpk13/rustdyno",
+          "description": "GitHub repo (owner/repo) to use as the board library, e.g. \"my-org/rustdyno-boards\""
         }
       }
     },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "rdyno",
-          "title": "rdyno",
+          "id": "rustdyno",
+          "title": "rustdyno",
           "icon": "./imgs/dyno.svg"
         }
       ]
     },
     "views": {
-      "rdyno": [
+      "rustdyno": [
         {
           "type": "webview",
-          "id": "rdyno.panel",
+          "id": "rustdyno.panel",
           "name": "Board Controls"
         },
         {
           "type": "webview",
-          "id": "rdyno.newProject",
+          "id": "rustdyno.newProject",
           "name": "New Project"
         },
         {
           "type": "webview",
-          "id": "rdyno.boardLibrary",
+          "id": "rustdyno.boardLibrary",
           "name": "Board Library"
         }
       ]
     }
   },
   "description": "Rust embedded runner",
-  "displayName": "rdyno",
+  "displayName": "rustdyno",
   "engines": {
     "vscode": "^1.110.0"
   },

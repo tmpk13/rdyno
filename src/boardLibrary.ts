@@ -24,7 +24,7 @@ export interface LibraryEntry {
 
 function httpsGet(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        const req = https.get(url, { headers: { "User-Agent": "rdyno-vscode/1.0" } }, (res) => {
+        const req = https.get(url, { headers: { "User-Agent": "rustdyno-vscode/1.0" } }, (res) => {
             if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
                 httpsGet(res.headers.location).then(resolve).catch(reject);
                 return;
@@ -68,7 +68,7 @@ export async function fetchAndSaveBoard(filename: string, downloadUrl: string): 
 export function getBoardsInstallDir(): string {
     if (_globalBoardsDir) { return _globalBoardsDir; }
     const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    const configDir = vscode.workspace.getConfiguration("rdyno").get<string>("boardConfigDir", ".rdyno");
+    const configDir = vscode.workspace.getConfiguration("rustdyno").get<string>("boardConfigDir", ".rustdyno");
     return path.join(wsRoot ?? ".", configDir);
 }
 
@@ -79,7 +79,7 @@ export function isBoardCached(filename: string): boolean {
 function getWorkspaceBoardDir(): string | undefined {
     const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!wsRoot) { return undefined; }
-    const configDir = vscode.workspace.getConfiguration("rdyno").get<string>("boardConfigDir", ".rdyno");
+    const configDir = vscode.workspace.getConfiguration("rustdyno").get<string>("boardConfigDir", ".rustdyno");
     return path.join(wsRoot, configDir);
 }
 

@@ -23,7 +23,7 @@ function loadHtml(ext: vscode.ExtensionContext, webview: vscode.Webview, htmlFil
 }
 
 export class BoardPanelProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = "rdyno.panel";
+    public static readonly viewType = "rustdyno.panel";
 
     private view?: vscode.WebviewView;
     private _pollInterval: NodeJS.Timeout | undefined;
@@ -97,7 +97,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     this.ext.workspaceState.update("portOverride", msg.data || undefined);
                     break;
                 case "listPorts": {
-                    const probePath = vscode.workspace.getConfiguration("rdyno").get<string>("probersPath", "probe-rs");
+                    const probePath = vscode.workspace.getConfiguration("rustdyno").get<string>("probersPath", "probe-rs");
                     exec(`${probePath} list`, (_err, stdout) => {
                         const ports: { id: string; label: string }[] = [];
                         for (const line of stdout.split("\n")) {
@@ -111,13 +111,13 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                 case "refresh":
                     refreshFiles().then(() => { this.sendState(); });
                     break;
-                case "build": vscode.commands.executeCommand("rdyno.build"); break;
-                case "flash": vscode.commands.executeCommand("rdyno.flash"); break;
-                case "rtt": vscode.commands.executeCommand("rdyno.rtt"); break;
+                case "build": vscode.commands.executeCommand("rustdyno.build"); break;
+                case "flash": vscode.commands.executeCommand("rustdyno.flash"); break;
+                case "rtt": vscode.commands.executeCommand("rustdyno.rtt"); break;
                 case "selectAndRun": {
                     openFile(msg.data.file);
                     this.sendState();
-                    vscode.commands.executeCommand(`rdyno.${msg.data.cmd}`);
+                    vscode.commands.executeCommand(`rustdyno.${msg.data.cmd}`);
                     break;
                 }
             }
@@ -164,7 +164,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
     }
 
     private startPolling(view: vscode.WebviewView) {
-        const probePath = vscode.workspace.getConfiguration("rdyno").get<string>("probersPath", "probe-rs");
+        const probePath = vscode.workspace.getConfiguration("rustdyno").get<string>("probersPath", "probe-rs");
         const poll = () => {
             exec(`${probePath} list`, (_err, stdout) => {
                 const probes: { id: string; label: string }[] = [];
@@ -193,7 +193,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
 
     private getCmdPreview(cmd: string): string {
         const board = getActiveBoard();
-        const probePath = vscode.workspace.getConfiguration("rdyno").get<string>("probersPath", "probe-rs");
+        const probePath = vscode.workspace.getConfiguration("rustdyno").get<string>("probersPath", "probe-rs");
         const port = getEffectivePort();
         const portFlag = port ? ` --probe ${port}` : "";
         switch (cmd) {
@@ -220,7 +220,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
 }
 
 export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = "rdyno.newProject";
+    public static readonly viewType = "rustdyno.newProject";
 
     private view?: vscode.WebviewView;
 
@@ -239,7 +239,7 @@ export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
         this.sendState();
         view.webview.onDidReceiveMessage((msg) => {
             if (msg.command === "newProject") {
-                vscode.commands.executeCommand("rdyno.newProject");
+                vscode.commands.executeCommand("rustdyno.newProject");
             } else if (msg.command === "refreshBoards") {
                 this.sendState();
             } else if (msg.command === "selectBoard") {
@@ -277,7 +277,7 @@ export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
 }
 
 export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = "rdyno.boardLibrary";
+    public static readonly viewType = "rustdyno.boardLibrary";
 
     private view?: vscode.WebviewView;
 
@@ -298,9 +298,9 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
         view.webview.onDidReceiveMessage(async (msg) => {
             switch (msg.command) {
                 case "fetchLibrary": {
-                    const repo = vscode.workspace.getConfiguration("rdyno").get<string>("boardLibraryRepo", "");
+                    const repo = vscode.workspace.getConfiguration("rustdyno").get<string>("boardLibraryRepo", "");
                     if (!repo) {
-                        view.webview.postMessage({ command: "libraryError", data: "No repo configured. Set rdyno.boardLibraryRepo in settings." });
+                        view.webview.postMessage({ command: "libraryError", data: "No repo configured. Set rustdyno.boardLibraryRepo in settings." });
                         return;
                     }
                     try {
@@ -320,7 +320,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
                         view.webview.postMessage({ command: "libraryList", data: withStatus });
                     } catch (err: unknown) {
                         const errMsg = err instanceof Error ? err.message : String(err);
-                        console.error("[rdyno] fetchLibrary error:", errMsg);
+                        console.error("[rustdyno] fetchLibrary error:", errMsg);
                         view.webview.postMessage({ command: "libraryError", data: `Failed to fetch library: ${errMsg}` });
                     }
                     break;
@@ -370,7 +370,7 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
                     break;
                 }
                 case "openSettings": {
-                    vscode.commands.executeCommand("workbench.action.openSettings", "rdyno.boardLibraryRepo");
+                    vscode.commands.executeCommand("workbench.action.openSettings", "rustdyno.boardLibraryRepo");
                     break;
                 }
             }

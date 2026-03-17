@@ -15,8 +15,8 @@ let activeFile: string | undefined;
 function getPickerConfigPath(): string | undefined {
   const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   if (!wsRoot) { return undefined; }
-  const configDir = vscode.workspace.getConfiguration("rdyno").get<string>("boardConfigDir", ".rdyno");
-  return path.join(wsRoot, configDir, "rdyno.toml");
+  const configDir = vscode.workspace.getConfiguration("rustdyno").get<string>("boardConfigDir", ".rustdyno");
+  return path.join(wsRoot, configDir, "rustdyno.toml");
 }
 
 function loadConfig(): PickerConfig {
@@ -37,7 +37,7 @@ function saveConfig(cfg: PickerConfig): void {
 }
 
 export async function refreshFiles(): Promise<void> {
-  const globs = vscode.workspace.getConfiguration("rdyno").get<string[]>("pickerGlobs", []);
+  const globs = vscode.workspace.getConfiguration("rustdyno").get<string[]>("pickerGlobs", []);
   if (!globs.length) {
     cachedFiles = [];
     cachedHidden = [];
