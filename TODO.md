@@ -84,6 +84,21 @@
 - [ ] Don't use vscode tabs unless they can be made larger
 
 - [ ] sdk defaults needs to be generated
+- [ ] Add dividers
+
+- [ ] Name boards by serial id
+- [ ] Outline on focus outer outline that is thicker and transparent/lighter
+
+- [ ] Toggle formatting options in .cargo/config.toml
+    - [ ] [env]
+    - [ ] DEFMT_LOG = "trace"
+
+- [ ] Live loading bar on run button
+    - [ ] Erasing ✔ 100% [####################]  17.00 KiB @  22.56 KiB/s (took 1s)
+    - [ ] Programming ✔ 100% [####################]  17.00 KiB @  17.86 KiB/s (took 1s)
+    - [ ] Show check on finish
+
+
 
 # ?
 - [ ] integrate installer for board toolchains??

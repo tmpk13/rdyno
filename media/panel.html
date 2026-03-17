@@ -20,12 +20,16 @@
           </button>
         </div>
       </div>
+      <hr class="thick-divider">
       <div class="file-list" id="fileList"></div>
       <div id="hiddenSection" style="display:none">
         <div class="label" style="margin-top:4px">Hidden</div>
         <div class="file-list" id="hiddenList"></div>
+        
       </div>
+      <hr class="thick-divider">
     </div>
+    
     <div class="panel-section" data-section="actions">
       <div id="actionBtns"></div>
     </div>
@@ -36,7 +40,9 @@
         <span class="btn-label">RTT Monitor</span>
         <span class="btn-check"><img id="rttCheckIcon" class="btn-check-icon"></span>
       </button>
+      <hr class="thick-divider">
     </div>
+    
     <div class="panel-section" data-section="config">
       <div class="config-header" onclick="toggleConfig()">
         <img class="config-arrow" id="configArrow">
@@ -52,6 +58,8 @@
           </div>
           <div class="drop-menu" id="menu-target"></div>
         </div>
+
+        <hr class="thick-divider">
         <div class="label">Board</div>
         <div class="cs-wrap">
           <div class="cs-btn" onclick="toggleDrop(event,'menu-board')">
@@ -61,6 +69,8 @@
           <div class="drop-menu" id="menu-board"></div>
         </div>
         <div class="active-board" id="activeBoardLabel"></div>
+
+        <hr class="thick-divider">
         <div class="label" id="portLabelEl">Port</div>
         <div style="display:flex;gap:4px;margin-bottom:8px">
           <div class="cs-wrap" style="flex:1;margin:0">
