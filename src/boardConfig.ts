@@ -31,7 +31,7 @@ export interface PanelLayout {
 }
 
 export interface BoardConfig {
-  board: { name: string; chip: string; target: string };
+  board: { name: string; chip: string; target: string; elf?: string };
   probe: { protocol: string; speed: number; port?: string };
   flash: Record<string, unknown>;
   rtt: { enabled: boolean; channels: { up: number; name: string }[] };
@@ -109,6 +109,16 @@ export function getLayout(): PanelLayout | undefined {
     order: Array.isArray(layout.order) ? layout.order : [],
     hidden: Array.isArray(layout.hidden) ? layout.hidden : [],
   };
+}
+
+export function setBoardElf(elf: string): void {
+  if (!activeBoardPath || !activeBoard) { return; }
+  activeBoard.board.elf = elf;
+  let data: TOML.JsonMap;
+  try { data = TOML.parse(fs.readFileSync(activeBoardPath, "utf-8")) as TOML.JsonMap; }
+  catch { data = {}; }
+  (data.board as TOML.JsonMap).elf = elf;
+  fs.writeFileSync(activeBoardPath, TOML.stringify(data), "utf-8");
 }
 
 export function setLayout(layout: PanelLayout): void {

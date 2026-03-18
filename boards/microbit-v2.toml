@@ -2,9 +2,10 @@
 name   = "BBC micro:bit v2"
 chip   = "nRF52833_xxAA"
 target = "thumbv7em-none-eabihf"
+elf    = "<CRATE_NAME>"
 
 [probe]
-protocol = "Cmsis-Dap"
+protocol = "swd"
 speed    = 4000          # kHz
 
 [flash]

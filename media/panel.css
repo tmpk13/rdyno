@@ -522,6 +522,19 @@ button.done .btn-check {
     white-space: nowrap;
 }
 
+.drop-port-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.drop-port-id {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    word-break: break-all;
+    white-space: normal;
+}
+
 .drop-item:hover {
     background: var(--vscode-list-hoverBackground);
 }

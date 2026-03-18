@@ -1,14 +1,22 @@
 # rustdyno
+
+<img width="200rem" alt="Rust crab and dynosaur" src="imgs/dyno.png">  
+
 Rust embedded runner for VSCode
+github.com/tmpk13/rustdyno
+<hr>
 
-<!-- <img width="400rem" alt="Rust crab and dynosaur" src="imgs/dyno.svg"> -->
+### Requires probe-rs
+[probe-rs](https://probe.rs/)
 
-A prototype testing running rust embedded from VSCode
 
 
+Rust running for embedded projects from VSCode
+
+<hr>
+<br>
 
 Inspired by: https://fob4.po8.org/posts/0050-rustdyno.html
 
 
-
-Claude Code was used in the development
+Claude Code was used in the development process

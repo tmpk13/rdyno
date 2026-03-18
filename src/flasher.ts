@@ -1,5 +1,17 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { getActiveBoard, getEffectivePort, selectBoard } from "./boardConfig";
+
+function getCrateName(): string | undefined {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders || folders.length === 0) { return undefined; }
+  const cargoPath = path.join(folders[0].uri.fsPath, "Cargo.toml");
+  try {
+    const content = fs.readFileSync(cargoPath, "utf8");
+    return content.match(/^\s*name\s*=\s*"([^"]+)"/m)?.[1];
+  } catch { return undefined; }
+}
 
 export async function flash(): Promise<void> {
   const board = getActiveBoard() ?? (await selectBoard());
@@ -21,8 +33,7 @@ export async function flash(): Promise<void> {
       ` --protocol ${board.probe.protocol}` +
       ` --speed ${board.probe.speed}` +
       portFlag +
-      ` target/${board.board.target}/release/<CRATE_NAME>`
-      // TODO: resolve crate name from Cargo.toml
+      ` target/${board.board.target}/release/${board.board.elf ?? getCrateName() ?? "<CRATE_NAME>"}`
     );
   } else {
     vscode.window.showErrorMessage("No flash command configured for this board. Add a [run] command or [probe] section to the board config.");

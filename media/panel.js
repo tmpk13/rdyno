@@ -497,6 +497,17 @@ window.addEventListener('message', e => {
         menu.innerHTML = '';
         [{ id: '', label: '-- auto --' }, ...ports, ...extra].forEach(p => {
             const el = makeDropItem(p.label, p.id === cur, () => pickPort(p.id, p.label));
+            if (p.id) {
+                el.innerHTML = '';
+                const name = document.createElement('div');
+                name.className = 'drop-port-name';
+                name.textContent = p.label;
+                const id = document.createElement('div');
+                id.className = 'drop-port-id';
+                id.textContent = p.id;
+                el.appendChild(name);
+                el.appendChild(id);
+            }
             el.dataset.val = p.id;
             menu.appendChild(el);
         });

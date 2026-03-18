@@ -102,8 +102,8 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     exec(`${probePath} list`, (_err, stdout) => {
                         const ports: { id: string; label: string }[] = [];
                         for (const line of stdout.split("\n")) {
-                            const m = line.match(/\[\d+\]:\s*(.+?)\s*--\s*([0-9a-fA-F]{4}:[0-9a-fA-F]{4}:\S+)/);
-                            if (m) { ports.push({ id: m[2], label: `${m[1]} (${m[2]})` }); }
+                            const m = line.match(/^\[\d+\]:\s*(.+?)\s*--\s*(\S+)/);
+                            if (m) { ports.push({ id: m[2], label: m[1].trim() }); }
                         }
                         view.webview.postMessage({ command: "ports", data: ports });
                     });
@@ -180,7 +180,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
             exec(`${probePath} list`, (_err, stdout) => {
                 const probes: { id: string; label: string }[] = [];
                 for (const line of stdout.split("\n")) {
-                    const m = line.match(/\[\d+\]:\s*(.+?)\s*--\s*([0-9a-fA-F]{4}:[0-9a-fA-F]{4}:\S+)/);
+                    const m = line.match(/^\[\d+\]:\s*(.+?)\s*--\s*(\S+)/);
                     if (m) { probes.push({ id: m[2], label: m[1].trim() }); }
                 }
                 const port = getEffectivePort();

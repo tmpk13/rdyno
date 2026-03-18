@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { exec } from "child_process";
 import * as TOML from "@iarna/toml";
-import { getActiveBoard } from "./boardConfig";
+import { getActiveBoard, setBoardElf } from "./boardConfig";
 
 export async function newProject(): Promise<void> {
     const board = getActiveBoard();
@@ -38,6 +38,7 @@ export async function newProject(): Promise<void> {
     if (!name) { return; }
 
     const projectDir = path.join(parentDir, name);
+    setBoardElf(name);
 
     // Run cargo new
     await vscode.window.withProgress(
