@@ -33,7 +33,7 @@ export async function flash(): Promise<void> {
       ` --protocol ${board.probe.protocol}` +
       ` --speed ${board.probe.speed}` +
       portFlag +
-      ` target/${board.board.target}/release/${board.board.elf ?? getCrateName() ?? "<CRATE_NAME>"}`
+      ` target/${board.board.target}/release/${(board.board.elf && board.board.elf !== "<CRATE_NAME>" ? board.board.elf : undefined) ?? getCrateName() ?? "<CRATE_NAME>"}`
     );
   } else {
     vscode.window.showErrorMessage("No flash command configured for this board. Add a [run] command or [probe] section to the board config.");

@@ -395,6 +395,25 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
                     view.webview.postMessage({ command: "boardRemoved", data: name });
                     break;
                 }
+                case "forceDownloadAll": {
+                    const repo = vscode.workspace.getConfiguration("rustdyno").get<string>("boardLibraryRepo", "");
+                    if (!repo) {
+                        view.webview.postMessage({ command: "libraryError", data: "No repo configured. Set rustdyno.boardLibraryRepo in settings." });
+                        return;
+                    }
+                    try {
+                        const entries = await fetchLibraryList(repo);
+                        const workspace = entries.filter(e => isBoardInWorkspace(e.name));
+                        await Promise.all(workspace.map(e => updateBoardInWorkspace(e.name, e.downloadUrl)));
+                        view.webview.postMessage({ command: "forceDownloadDone" });
+                        vscode.window.showInformationMessage(`Updated ${workspace.length} board(s) from GitHub.`);
+                    } catch (err: unknown) {
+                        const errMsg = err instanceof Error ? err.message : String(err);
+                        view.webview.postMessage({ command: "libraryError", data: `Force download failed: ${errMsg}` });
+                        vscode.window.showErrorMessage(`Force download failed: ${errMsg}`);
+                    }
+                    break;
+                }
                 case "openSettings": {
                     vscode.commands.executeCommand("workbench.action.openSettings", "rustdyno.boardLibraryRepo");
                     break;

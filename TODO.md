@@ -100,12 +100,13 @@
 
 - [ ] If no .rustdyno does not exist have new project show up for current or new dir
 
-- [ ] Add pulse to the status
+- [x] Add pulse to the status
+- [ ] Fix status pulse to center it
 
 - [ ] Support multiple board targets in one upload loop through
 
 - [ ] File checker button
-- [ ] make it so that naming the new project is from a text input not popup
+- [ ] Make it so that naming the new project is from a text input not popup
 
 # ?
 - [ ] integrate installer for board toolchains??

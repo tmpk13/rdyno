@@ -108,6 +108,11 @@ function load() {
     send('fetchLibrary');
 }
 
+function forceDownloadAll(btn) {
+    btn.disabled = true;
+    send('forceDownloadAll');
+}
+
 function downloadBoard(btn) {
     const name = btn.dataset.board;
     const downloadUrl = btn.dataset.url;
@@ -143,6 +148,8 @@ window.addEventListener('message', e => {
         REFRESH_URI = msg.uris.refresh;
         const refreshIcon = document.getElementById('refreshIcon');
         if (refreshIcon) { refreshIcon.src = msg.uris.refresh; }
+        const downIcon = document.getElementById('downIcon');
+        if (downIcon) { downIcon.src = msg.uris.down; }
         load();
     } else if (msg.command === 'libraryList') {
         if (!msg.data.length) {
@@ -186,6 +193,10 @@ window.addEventListener('message', e => {
             const c = findBtnsContainer(msg.data);
             if (c) { c.outerHTML = stateBtns(allBoards[idx]); }
         }
+    } else if (msg.command === 'forceDownloadDone') {
+        const btn = document.querySelector('[onclick^="forceDownloadAll"]') || document.querySelector('[title="Force check and download all from GitHub"]');
+        if (btn) { btn.disabled = false; }
+        load();
     } else if (msg.command === 'boardError') {
         const idx = allBoards.findIndex(b => b.name === msg.data.name);
         if (idx !== -1) {
