@@ -1,7 +1,7 @@
 # rustdyno
 Rust embedded runner for VSCode
 
-<img width="400rem" alt="Rust crab and dynosaur" src="imgs/dyno.svg">
+<!-- <img width="400rem" alt="Rust crab and dynosaur" src="imgs/dyno.svg"> -->
 
 A prototype testing running rust embedded from VSCode
 

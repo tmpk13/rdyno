@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { exec } from "child_process";
-import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getEffectivePort, getLayout, getPortOverride, getDefaultTargetFile, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setDefaultTargetFile, setLayout, setPortOverride } from "./boardConfig";
+import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getEffectivePort, getLayout, getPortOverride, getDefaultTargetFile, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setDefaultTargetFile, setLayout, setPortOverride, getProbeMap, setProbeMapping, clearProbeBoard } from "./boardConfig";
 
 const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
     build: { label: "Build", color: "#1e7ec8" },
@@ -27,6 +27,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
 
     private view?: vscode.WebviewView;
     private _pollInterval: NodeJS.Timeout | undefined;
+    private _seenProbeIds = new Set<string>();
 
     constructor(private readonly ext: vscode.ExtensionContext) { }
 
@@ -120,6 +121,16 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     vscode.commands.executeCommand(`rustdyno.${msg.data.cmd}`);
                     break;
                 }
+                case "nameProbe": {
+                    const { probeId, name, boardFile } = msg.data as { probeId: string; name: string; boardFile?: string };
+                    setProbeMapping(probeId, name, boardFile);
+                    break;
+                }
+                case "clearProbeBoard": {
+                    const { probeId } = msg.data as { probeId: string };
+                    clearProbeBoard(probeId);
+                    break;
+                }
             }
         });
     }
@@ -174,7 +185,22 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                 }
                 const port = getEffectivePort();
                 const connected = port ? probes.some(p => p.id === port) : probes.length > 0;
-                view.webview.postMessage({ command: "probeStatus", data: { connected, probes } });
+
+                // Auto-select board when a mapped probe appears for the first time
+                const probeMap = getProbeMap();
+                for (const probe of probes) {
+                    if (!this._seenProbeIds.has(probe.id)) {
+                        const mapping = probeMap[probe.id];
+                        if (mapping?.board) {
+                            selectBoardByFile(mapping.board);
+                            setDefaultBoardFile(mapping.board);
+                            this.sendState();
+                        }
+                    }
+                }
+                this._seenProbeIds = new Set(probes.map(p => p.id));
+
+                view.webview.postMessage({ command: "probeStatus", data: { connected, probes, probeMap } });
             });
         };
         poll();

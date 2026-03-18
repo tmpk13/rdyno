@@ -630,6 +630,16 @@ img:not([src]), img[src=""] {
     opacity: 1;
 }
 
+@keyframes probe-dot-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.6); }
+    70%  { box-shadow: 0 0 0 4px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+.probe-dot.connected.pulse {
+    animation: probe-dot-pulse 0.5s ease-out;
+}
+
 .probe-dot.disconnected {
     background: var(--vscode-foreground);
     opacity: 0.25;
@@ -791,4 +801,70 @@ body.edit-mode .panel-section > *:not(.edit-bar) {
 button.loading .btn-icon,
 button.done .btn-icon {
     visibility: hidden;
+}
+
+/* Probe naming */
+.probe-naming-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.probe-name-input {
+    flex: 1;
+    min-width: 0;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border, var(--vscode-dropdown-border));
+    padding: 2px 5px;
+    font-size: 0.75rem;
+    font-family: var(--vscode-font-family);
+    border-radius: 2px;
+    height: 1.5rem;
+    box-sizing: border-box;
+}
+
+.probe-name-input:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: -1px;
+}
+
+.probe-naming-right {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.probe-board-badge {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    max-width: 7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.probe-bookmark-btn,
+.probe-clear-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--vscode-foreground);
+    padding: 0 3px;
+    font-size: 0.875rem;
+    line-height: 1;
+    opacity: 0.6;
+    border-radius: 2px;
+}
+
+.probe-bookmark-btn:hover {
+    opacity: 1;
+    color: #d1a618;
+}
+
+.probe-clear-btn:hover {
+    opacity: 1;
+    color: var(--vscode-errorForeground);
 }

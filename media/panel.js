@@ -6,6 +6,8 @@ let _isConfigOpen = false;
 let _isHiddenOpen = false;
 let _firstRender = true;
 let _uris = null;
+let _probeMap = {};
+let _currentProbes = [];
 
 // --- Layout / edit mode ---
 
@@ -502,8 +504,14 @@ window.addEventListener('message', e => {
     } else if (msg.command === 'probeStatus') {
         const dot = document.getElementById('probeDot');
         if (dot) {
+            const wasConnected = dot.classList.contains('connected');
             dot.className = 'probe-dot ' + (msg.data.connected ? 'connected' : 'disconnected');
             dot.title = msg.data.connected ? 'Probe connected' : 'No probe detected';
+            if (msg.data.connected) {
+                dot.classList.remove('pulse');
+                void dot.offsetWidth; // reflow to restart animation
+                dot.classList.add('pulse');
+            }
         }
         if (!window.CURRENT_PORT) {
             const first = msg.data.probes?.[0];
@@ -513,6 +521,7 @@ window.addEventListener('message', e => {
             const summary = document.getElementById('configSummary');
             if (summary && STATE) { summary.textContent = `${STATE.activeName} \u00b7 ${autoText}`; }
         }
+        renderProbeNaming(msg.data.probes, msg.data.probeMap);
     }
 });
 
@@ -567,6 +576,88 @@ function onDrop(e, dropIndex) {
     dragSrcIndex = null;
     document.querySelectorAll('.file-item').forEach(el => el.classList.remove('drag-over'));
 }
+
+// --- Probe naming ---
+
+function renderProbeNaming(probes, probeMap) {
+    _currentProbes = probes || [];
+    _probeMap = probeMap || {};
+    const area = document.getElementById('probeNamingArea');
+    const list = document.getElementById('probeNamingList');
+    if (!area || !list) { return; }
+    if (_currentProbes.length === 0) { area.style.display = 'none'; return; }
+    area.style.display = '';
+    list.innerHTML = '';
+    _currentProbes.forEach(probe => {
+        list.appendChild(makeProbeNamingRow(probe, _probeMap[probe.id] || {}));
+    });
+}
+
+function makeProbeNamingRow(probe, mapping) {
+    const row = document.createElement('div');
+    row.className = 'probe-naming-row';
+
+    const nameInput = document.createElement('input');
+    nameInput.className = 'probe-name-input';
+    nameInput.type = 'text';
+    nameInput.placeholder = probe.label || probe.id;
+    nameInput.value = mapping.name || '';
+    nameInput.title = probe.id;
+
+    const right = document.createElement('div');
+    right.className = 'probe-naming-right';
+
+    if (mapping.board) {
+        const boardLabel = document.createElement('span');
+        boardLabel.className = 'probe-board-badge';
+        boardLabel.textContent = mapping.board.replace(/\.toml$/, '');
+        boardLabel.title = mapping.board;
+
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'probe-clear-btn';
+        clearBtn.title = 'Clear board association (keeps name)';
+        clearBtn.textContent = '\u2715';
+        clearBtn.addEventListener('click', () => {
+            send('clearProbeBoard', { probeId: probe.id });
+            const m = _probeMap[probe.id] || {};
+            delete m.board;
+            _probeMap[probe.id] = m;
+            renderProbeNaming(_currentProbes, _probeMap);
+        });
+
+        right.appendChild(boardLabel);
+        right.appendChild(clearBtn);
+    } else {
+        const bookmarkBtn = document.createElement('button');
+        bookmarkBtn.className = 'probe-bookmark-btn';
+        bookmarkBtn.title = 'Associate current board with this probe';
+        bookmarkBtn.textContent = '\u2605';
+        bookmarkBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim() || probe.label;
+            const boardFile = STATE && STATE.activeBoardFile;
+            send('nameProbe', { probeId: probe.id, name, boardFile });
+            _probeMap[probe.id] = { name, board: boardFile };
+            renderProbeNaming(_currentProbes, _probeMap);
+        });
+        right.appendChild(bookmarkBtn);
+    }
+
+    // Save name alone (Enter key or when no board yet)
+    nameInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            const name = nameInput.value.trim() || probe.label;
+            send('nameProbe', { probeId: probe.id, name, boardFile: mapping.board });
+            if (!_probeMap[probe.id]) { _probeMap[probe.id] = {}; }
+            _probeMap[probe.id].name = name;
+        }
+    });
+
+    row.appendChild(nameInput);
+    row.appendChild(right);
+    return row;
+}
+
+// --- End probe naming ---
 
 // Tooltip — event delegation so it works after re-renders
 (function initTooltips() {

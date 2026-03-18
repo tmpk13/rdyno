@@ -97,6 +97,7 @@
       ]
     }
   },
+  "publisher": "Tmpk-rs",
   "description": "Rust embedded runner",
   "displayName": "rustdyno",
   "engines": {
@@ -118,5 +119,9 @@
   },
   "dependencies": {
     "@iarna/toml": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tmpk13/rustdyno"
   }
 }

@@ -198,3 +198,54 @@ export function setPortOverride(port: string | undefined): void {
 export function getEffectivePort(): string | undefined {
   return portOverride ?? activeBoard?.probe?.port;
 }
+
+export interface ProbeMapping {
+  name?: string;
+  board?: string;
+}
+
+export function getProbeMap(): Record<string, ProbeMapping> {
+  const data = readRdynoToml();
+  const probesRaw = data.probes;
+  if (!probesRaw || typeof probesRaw !== 'object' || Array.isArray(probesRaw)) { return {}; }
+  const result: Record<string, ProbeMapping> = {};
+  for (const [id, val] of Object.entries(probesRaw as Record<string, unknown>)) {
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      const v = val as Record<string, unknown>;
+      result[id] = {
+        name: typeof v.name === 'string' ? v.name : undefined,
+        board: typeof v.board === 'string' ? v.board : undefined,
+      };
+    }
+  }
+  return result;
+}
+
+export function setProbeMapping(probeId: string, name: string, boardFile?: string): void {
+  const data = readRdynoToml();
+  const probesRaw = data.probes;
+  const probes = (probesRaw && typeof probesRaw === 'object' && !Array.isArray(probesRaw)
+    ? probesRaw : {}) as TOML.JsonMap;
+  const existingRaw = probes[probeId];
+  const existing = (existingRaw && typeof existingRaw === 'object' && !Array.isArray(existingRaw)
+    ? existingRaw : {}) as TOML.JsonMap;
+  existing.name = name;
+  if (boardFile !== undefined) { existing.board = boardFile; }
+  probes[probeId] = existing;
+  data.probes = probes;
+  writeRdynoToml(data);
+}
+
+export function clearProbeBoard(probeId: string): void {
+  const data = readRdynoToml();
+  const probesRaw = data.probes;
+  if (!probesRaw || typeof probesRaw !== 'object' || Array.isArray(probesRaw)) { return; }
+  const probes = probesRaw as TOML.JsonMap;
+  const existingRaw = probes[probeId];
+  if (existingRaw && typeof existingRaw === 'object' && !Array.isArray(existingRaw)) {
+    const existing = existingRaw as TOML.JsonMap;
+    delete existing.board;
+    probes[probeId] = existing;
+    writeRdynoToml(data);
+  }
+}

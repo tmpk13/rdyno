@@ -100,5 +100,9 @@
 
 - [ ] If no .rustdyno does not exist have new project show up for current or new dir
 
+- [ ] Add pulse to the status
+
+- [ ] Support multiple board targets in one upload loop through
+
 # ?
 - [ ] integrate installer for board toolchains??
