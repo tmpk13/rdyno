@@ -104,5 +104,7 @@
 
 - [ ] Support multiple board targets in one upload loop through
 
+- [ ] File checker button
+
 # ?
 - [ ] integrate installer for board toolchains??
