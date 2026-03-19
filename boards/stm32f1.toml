@@ -19,7 +19,7 @@ channels = [{ up = 0, name = "Terminal" }]
 # [new_project] — files and settings scaffolded when creating a new project
 # ---------------------------------------------------------------------------
 [new_project]
-runner = "probe-rs run --chip STM32F103C8Tx"
+runner = "probe-rs run --chip STM32F103C8Tx --protocol swd"
 
 [new_project.dependencies]
 cortex-m     = { version = "0.7.7", features = ["critical-section-single-core"] }
@@ -76,7 +76,7 @@ MEMORY {
 path    = ".cargo/config.toml"
 content = """
 [target.thumbv7m-none-eabi]
-runner     = \"probe-rs run --chip STM32F103C8Tx\"
+runner     = \"probe-rs run --chip STM32F103C8Tx --protocol {{PROTOCOL}}\"
 rustflags  = [\"-C\", \"link-arg=-Tlink.x\", \"-C\", \"link-arg=-Tmemory.x\"]
 
 [build]

@@ -111,5 +111,9 @@
 - [ ] Add a way to update existing project with new files from the board library
 - [ ] Add support for cargo generate
 
+- [ ] Fix rtt attach
+
+- [ ] Esp is selected board even when selecting others in the new project section
+
 # ?
 - [ ] integrate installer for board toolchains??

@@ -20,7 +20,7 @@ channels = [{ up = 0, name = "Terminal" }]
 # [new_project] — files and settings scaffolded when creating a new project
 # ---------------------------------------------------------------------------
 [new_project]
-runner = "probe-rs run --chip nRF52833_xxAA"
+runner = "probe-rs run --chip nRF52833_xxAA --protocol swd"
 
 dependencies = """
 cortex-m         = { version = "0.7", features = ["inline-asm", "critical-section-single-core"] }
@@ -77,7 +77,7 @@ content = """
 target = \"thumbv7em-none-eabihf\"
 
 [target.thumbv7em-none-eabihf]
-runner = \"probe-rs run --chip nRF52833_xxAA\"
+runner = \"probe-rs run --chip nRF52833_xxAA --protocol {{PROTOCOL}}\"
 rustflags = [
   \"-C\", \"linker=rust-lld\",
   \"-C\", \"link-arg=-Tlink.x\",

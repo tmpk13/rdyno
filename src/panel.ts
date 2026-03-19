@@ -264,6 +264,7 @@ export class NewProjectPanelProvider implements vscode.WebviewViewProvider {
         };
         view.webview.html = this.getHtml();
         this.sendState();
+        view.onDidChangeVisibility(() => { if (view.visible) { this.sendState(); } });
         view.webview.onDidReceiveMessage(async (msg) => {
             if (msg.command === "refreshBoards") {
                 this.sendState();
