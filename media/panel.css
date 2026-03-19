@@ -767,12 +767,13 @@ body.edit-mode .panel-section > *:not(.edit-bar) {
 }
 
 .np-browse-btn {
-    flex-shrink: 0;
-    width: auto;
-    min-height: 0;
-    padding: 0 8px;
-    margin: 0;
+    flex-shrink: 0 !important;
+    width: auto !important;
+    min-height: 0 !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
     font-size: 0.8125rem;
+    align-self: stretch;
 }
 
 #np-name,
