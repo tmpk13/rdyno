@@ -67,6 +67,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     break;
                 case "selectFile": {
                     openFile(msg.data);
+                    if (!getDefaultTargetFile()) { setDefaultTargetFile(msg.data); }
                     this.sendState();
                     const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
                     if (wsRoot) {

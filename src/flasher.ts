@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import { getActiveBoard, getEffectivePort, selectBoard } from "./boardConfig";
+import { getActiveFile } from "./filePicker";
 
 export async function flash(): Promise<void> {
   const board = getActiveBoard() ?? (await selectBoard());
@@ -14,7 +16,11 @@ export async function flash(): Promise<void> {
   } else if (board.new_project?.runner) {
     // Project was scaffolded with a .cargo/config.toml runner — delegate to cargo
     const probeEnv = port ? `PROBE_RS_PROBE=${port} ` : "";
-    terminal.sendText(`${probeEnv}cargo run --release`);
+    const activeFile = getActiveFile();
+    const binFlag = activeFile && path.basename(activeFile) !== "main.rs"
+      ? ` --bin ${path.basename(activeFile, ".rs")}`
+      : "";
+    terminal.sendText(`${probeEnv}cargo run --release${binFlag}`);
   } else if (board.probe) {
     const probePath = vscode.workspace.getConfiguration("rustdyno").get<string>("probersPath", "probe-rs");
     const portFlag = port ? ` --probe ${port}` : "";
