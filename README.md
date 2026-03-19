@@ -20,7 +20,7 @@ github.com/tmpk13/rustdyno
  - Download board configurations from remote repo
 
 
-![alt text](image.png)
+<img src="imgs/extension-screenshot.png" height="400rem">
 <hr>
 <br>
 
