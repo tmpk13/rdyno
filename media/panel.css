@@ -237,6 +237,7 @@ button:hover {
 .cs-wrap {
     position: relative;
     margin: 0.25rem 0 0.5rem;
+    min-width: 0;
 }
 
 /* Clickable row that looks like a select input */
@@ -262,6 +263,7 @@ button:hover {
 /* Currently selected value text */
 .cs-val {
     flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -317,8 +319,7 @@ button:hover {
     width: 2rem;
     height: 2rem;
     margin: 0;
-    width: auto;
-    padding: 0.25rem 0.625rem;
+    padding: 0;
     font-size: 0.75rem;
 }
 
@@ -526,6 +527,7 @@ button.done .btn-check {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .drop-port-id {
@@ -705,10 +707,10 @@ img:not([src]), img[src=""] {
 }
 
 .edit-eye-btn {
-    width: auto;
+    width: 1.6rem;
     min-height: auto;
     height: 1.6rem;
-    padding: 0 0.5rem;
+    padding: 0;
     margin: 0;
     font-size: 0.8125rem;
     flex-shrink: 0;

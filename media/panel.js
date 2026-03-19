@@ -458,7 +458,8 @@ function render(state) {
     }
 
     // Config summary
-    document.getElementById('configSummary').textContent = `${activeName} \u00b7 ${effectivePort || 'auto'}`;
+    const portDisplayName = effectivePort ? (_probeMap[effectivePort]?.name || effectivePort) : 'auto';
+    document.getElementById('configSummary').textContent = `${activeName} \u00b7 ${portDisplayName}`;
 
     // Board dropdown
     document.getElementById('cs-val-board').textContent = activeBoardFile ? activeBoardFile.replace(/\.toml$/, '') : '-- choose a board --';
@@ -496,12 +497,13 @@ window.addEventListener('message', e => {
         const extra = cur && !ports.find(p => p.id === cur) ? [{ id: cur, label: cur }] : [];
         menu.innerHTML = '';
         [{ id: '', label: '-- auto --' }, ...ports, ...extra].forEach(p => {
-            const el = makeDropItem(p.label, p.id === cur, () => pickPort(p.id, p.label));
+            const displayName = p.id ? (_probeMap[p.id]?.name || p.label) : p.label;
+            const el = makeDropItem(displayName, p.id === cur, () => pickPort(p.id, displayName));
             if (p.id) {
                 el.innerHTML = '';
                 const name = document.createElement('div');
                 name.className = 'drop-port-name';
-                name.textContent = p.label;
+                name.textContent = displayName;
                 const id = document.createElement('div');
                 id.className = 'drop-port-id';
                 id.textContent = p.id;
@@ -511,11 +513,13 @@ window.addEventListener('message', e => {
             el.dataset.val = p.id;
             menu.appendChild(el);
         });
-        if (valEl) { valEl.textContent = cur ? (ports.find(p => p.id === cur)?.label ?? cur) : 'auto'; }
+        if (valEl) {
+            const curPort = ports.find(p => p.id === cur);
+            valEl.textContent = cur ? (_probeMap[cur]?.name || curPort?.label || cur) : 'auto';
+        }
     } else if (msg.command === 'probeStatus') {
         const dot = document.getElementById('probeDot');
         if (dot) {
-            const wasConnected = dot.classList.contains('connected');
             dot.className = 'probe-dot ' + (msg.data.connected ? 'connected' : 'disconnected');
             dot.title = msg.data.connected ? 'Probe connected' : 'No probe detected';
             if (msg.data.connected) {
@@ -526,7 +530,8 @@ window.addEventListener('message', e => {
         }
         if (!window.CURRENT_PORT) {
             const first = msg.data.probes?.[0];
-            const autoText = first ? `auto · ${first.label}` : 'auto';
+            const firstName = first ? (msg.data.probeMap?.[first.id]?.name || first.label) : null;
+            const autoText = firstName ? `auto · ${firstName}` : 'auto';
             const valEl = document.getElementById('cs-val-port');
             if (valEl) { valEl.textContent = autoText; }
             const summary = document.getElementById('configSummary');
@@ -598,10 +603,30 @@ function renderProbeNaming(probes, probeMap) {
     if (!area || !list) { return; }
     if (_currentProbes.length === 0) { area.style.display = 'none'; return; }
     area.style.display = '';
+    // Preserve any in-progress input values and focus before re-rendering
+    const draftValues = {};
+    let focusedProbeId = null;
+    list.querySelectorAll('.probe-name-input').forEach(el => {
+        if (el.title) {
+            draftValues[el.title] = el.value;
+            if (el === document.activeElement) { focusedProbeId = el.title; }
+        }
+    });
     list.innerHTML = '';
     _currentProbes.forEach(probe => {
-        list.appendChild(makeProbeNamingRow(probe, _probeMap[probe.id] || {}));
+        const row = makeProbeNamingRow(probe, _probeMap[probe.id] || {});
+        // Restore in-progress value if the user had typed something unsaved
+        if (probe.id in draftValues) {
+            const input = row.querySelector('.probe-name-input');
+            if (input) { input.value = draftValues[probe.id]; }
+        }
+        list.appendChild(row);
     });
+    // Restore focus
+    if (focusedProbeId) {
+        const toFocus = list.querySelector(`.probe-name-input[title="${CSS.escape(focusedProbeId)}"]`);
+        if (toFocus) { toFocus.focus(); }
+    }
 }
 
 function makeProbeNamingRow(probe, mapping) {

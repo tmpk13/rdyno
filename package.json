@@ -1,8 +1,8 @@
 {
   "name": "rustdyno",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./dist/extension.js",
-  "icon": "./imgs/dyno.png",
+  "icon": "imgs/dyno.png",
   "devDependencies": {
     "@types/iarna__toml": "^2.0.5",
     "@types/mocha": "^10.0.10",
@@ -74,7 +74,7 @@
         {
           "id": "rustdyno",
           "title": "rustdyno",
-          "icon": "./imgs/dyno.svg"
+          "icon": "imgs/dyno.svg"
         }
       ]
     },
