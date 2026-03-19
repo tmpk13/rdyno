@@ -1,3 +1,53 @@
+/* ============================================================
+   Custom theme tokens — override these to restyle the panel
+   without touching individual rules. Each defaults to the
+   matching VSCode variable so the panel stays in-theme unless
+   explicitly customised.
+   ============================================================ */
+:root {
+    /* Typography */
+    --rd-font:         var(--vscode-font-family);
+    --rd-font-size:    var(--vscode-font-size);
+    --rd-editor-font:  var(--vscode-editor-font-family, monospace);
+
+    /* Core colors */
+    --rd-fg:           var(--vscode-foreground);
+    --rd-focus:        var(--vscode-focusBorder);
+    --rd-error-fg:     var(--vscode-errorForeground);
+    --rd-error-border: var(--vscode-inputValidation-errorBorder, #f44747);
+
+    /* Primary buttons */
+    --rd-btn-bg:       var(--vscode-button-background);
+    --rd-btn-fg:       var(--vscode-button-foreground);
+    --rd-btn-hover:    var(--vscode-button-hoverBackground);
+
+    /* Secondary buttons */
+    --rd-btn2-bg:      var(--vscode-button-secondaryBackground);
+    --rd-btn2-fg:      var(--vscode-button-secondaryForeground);
+    --rd-btn2-hover:   var(--vscode-button-secondaryHoverBackground);
+
+    /* Dropdowns / selects */
+    --rd-drop-bg:      var(--vscode-dropdown-background);
+    --rd-drop-fg:      var(--vscode-dropdown-foreground);
+    --rd-drop-border:  var(--vscode-dropdown-border);
+
+    /* Inputs */
+    --rd-input-bg:     var(--vscode-input-background);
+    --rd-input-fg:     var(--vscode-input-foreground);
+    --rd-input-border: var(--vscode-input-border, var(--vscode-dropdown-border));
+
+    /* List selection */
+    --rd-active-bg:    var(--vscode-list-activeSelectionBackground);
+    --rd-active-fg:    var(--vscode-list-activeSelectionForeground);
+
+    /* Miscellaneous */
+    --rd-editor-header:  var(--vscode-editorGroupHeader-tabsBackground, rgba(128, 128, 128, 0.12));
+    --rd-tooltip-bg:     var(--vscode-editorHoverWidget-background);
+    --rd-tooltip-fg:     var(--vscode-editorHoverWidget-foreground);
+    --rd-tooltip-border: var(--vscode-editorHoverWidget-border);
+    --rd-toolbar-hover:  var(--vscode-toolbar-hoverBackground);
+}
+
 /* Sub-panels (library, new-project) that share this CSS but have no #sectionsContainer */
 body.sub-panel {
     padding: 0.625rem;
@@ -6,8 +56,8 @@ body.sub-panel {
 /* Panel root */
 body {
     padding: 0;
-    font-family: var(--vscode-font-family);
-    color: var(--vscode-foreground);
+    font-family: var(--rd-font);
+    color: var(--rd-fg);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -26,7 +76,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid var(--vscode-dropdown-border);
+    border-top: 1px solid var(--rd-drop-border);
     flex-shrink: 0;
 }
 
@@ -38,11 +88,17 @@ body {
 }
 
 .thick-divider {
-    height: 0.25rem;
+    border: none;
+    height: 8px;
     width: 100%;
-    border-width: 0;
-    color: gray;
-    background-color: gray;
+    background-color: var(--rd-fg);
+    opacity: 0.25;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8'%3E%3Cpath d='M0 4 Q5 0 10 4 Q15 8 20 4' stroke='black' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8'%3E%3Cpath d='M0 4 Q5 0 10 4 Q15 8 20 4' stroke='black' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: repeat-x;
+    mask-repeat: repeat-x;
+    -webkit-mask-position: center;
+    mask-position: center;
 }
 
 /*
@@ -57,7 +113,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0.3125rem 0.5rem;
-    border-bottom: 1px solid var(--vscode-dropdown-border);
+    border-bottom: 1px solid var(--rd-drop-border);
 }
 
 .lib-item:last-child {
@@ -127,7 +183,7 @@ body {
     margin: 0;
     flex-shrink: 0;
     cursor: default;
-    border: 1px solid var(--vscode-dropdown-border);
+    border: 1px solid var(--rd-drop-border);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -169,7 +225,7 @@ body {
 }
 
 .lib-list {
-    border: 1px solid var(--vscode-dropdown-border);
+    border: 1px solid var(--rd-drop-border);
     border-radius: 0.25rem;
     margin-bottom: 0.5rem;
     max-height: 18.75rem;
@@ -185,7 +241,7 @@ body {
 
 .lib-error {
     font-size: 0.75rem;
-    color: var(--vscode-errorForeground);
+    color: var(--rd-error-fg);
     padding: 0.5rem;
 }
 
@@ -202,9 +258,9 @@ body {
     margin-bottom: 0.375rem;
     padding: 0.1875rem 0.375rem;
     font-size: 0.75rem;
-    background: var(--vscode-input-background);
-    color: var(--vscode-input-foreground);
-    border: 1px solid var(--vscode-input-border, var(--vscode-dropdown-border));
+    background: var(--rd-input-bg);
+    color: var(--rd-input-fg);
+    border: 1px solid var(--rd-input-border);
     border-radius: 0.1875rem;
     outline: none;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -212,7 +268,7 @@ body {
 
 #search:focus,
 #np-search:focus {
-    outline: 0.15rem solid var(--vscode-focusBorder);
+    outline: 0.15rem solid var(--rd-focus);
     outline-offset: -1px;
 }
 
@@ -223,14 +279,14 @@ button {
     padding: 0.5rem;
     margin: 0.25rem 0;
     cursor: pointer;
-    background: var(--vscode-button-background);
-    color: var(--vscode-button-foreground);
+    background: var(--rd-btn-bg);
+    color: var(--rd-btn-fg);
     border: none;
     border-radius: 0.25rem;
 }
 
 button:hover {
-    background: var(--vscode-button-hoverBackground);
+    background: var(--rd-btn-hover);
 }
 
 /* Custom select wrapper (Target / Board / Port) */
@@ -246,18 +302,18 @@ button:hover {
     align-items: center;
     min-height: 2.25rem;
     padding: 0.375rem;
-    background: var(--vscode-dropdown-background);
-    color: var(--vscode-dropdown-foreground);
-    border: 1px solid var(--vscode-dropdown-border);
+    background: var(--rd-drop-bg);
+    color: var(--rd-drop-fg);
+    border: 1px solid var(--rd-drop-border);
     border-radius: 0.25rem;
     cursor: pointer;
     user-select: none;
-    font-family: var(--vscode-font-family);
-    font-size: var(--vscode-font-size);
+    font-family: var(--rd-font);
+    font-size: var(--rd-font-size);
 }
 
 .cs-btn:hover {
-    background: var(--vscode-list-hoverBackground);
+    background: #0003;
 }
 
 /* Currently selected value text */
@@ -314,6 +370,10 @@ button:hover {
     text-align: center;
 }
 
+.hidden-badge:empty {
+    display: none;
+}
+
 /* Small inline icon button (e.g. hidden toggle with the eye icon) */
 .icon-btn {
     width: 2rem;
@@ -321,6 +381,28 @@ button:hover {
     margin: 0;
     padding: 0;
     font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(128, 128, 128, 0.35);
+    background: transparent;
+    transition: border-color 0.12s ease;
+}
+
+.icon-btn:hover {
+    border-color: rgba(255, 255, 255, 0.75) !important;
+    outline: none !important;
+}
+
+.icon-btn:active {
+    border-color: var(--rd-focus) !important;
+    outline: none !important;
+}
+
+.icon-btn:focus-visible {
+    outline: 2px solid var(--rd-focus) !important;
+    outline-offset: 1px !important;
+    border-color: transparent !important;
 }
 
 /* Scrollable list of files */
@@ -328,7 +410,7 @@ button:hover {
     max-height: 11.25rem;
     overflow-y: auto;
     margin-bottom: 0.5rem;
-    border: 1px solid var(--vscode-dropdown-border);
+    border: 1px solid var(--rd-drop-border);
     border-radius: 0.25rem;
 }
 
@@ -343,13 +425,13 @@ button:hover {
 }
 
 .file-item:hover {
-    background: var(--vscode-list-hoverBackground);
+    background: #0003;
 }
 
 /* Selected file */
 .file-item.active {
-    background: var(--vscode-list-activeSelectionBackground);
-    color: var(--vscode-list-activeSelectionForeground);
+    background: var(--rd-active-bg);
+    color: var(--rd-active-fg);
 }
 
 /* File being dragged */
@@ -359,7 +441,7 @@ button:hover {
 
 /* Drop target indicator */
 .file-item.drag-over {
-    border-top: 0.25rem solid var(--vscode-focusBorder);
+    border-top: 0.25rem solid var(--rd-focus);
 }
 
 /* Truncated filename text */
@@ -393,8 +475,8 @@ button:hover {
     margin: 0 0 0 0.25rem;
     font-size: 0.6875rem;
     line-height: 1.4;
-    background: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-foreground);
+    background: var(--rd-btn2-bg);
+    color: var(--rd-fg);
     opacity: 0.55;
     border-radius: 0.1875rem;
     flex-shrink: 0;
@@ -406,7 +488,7 @@ button:hover {
 
 .remove-btn:hover {
     opacity: 1 !important;
-    background: var(--vscode-toolbar-hoverBackground) !important;
+    background: var(--rd-toolbar-hover) !important;
 }
 
 /* Spinner animation used by button loading state */
@@ -520,8 +602,8 @@ button.done .btn-check {
     margin-top: 0.125rem;
     max-height: 10rem;
     overflow-y: auto;
-    background: var(--vscode-dropdown-background);
-    border: 1px solid var(--vscode-dropdown-border);
+    background: var(--rd-drop-bg);
+    border: 1px solid var(--rd-drop-border);
     border-radius: 0.25rem;
 }
 
@@ -554,13 +636,13 @@ button.done .btn-check {
 }
 
 .drop-item:hover {
-    background: var(--vscode-list-hoverBackground);
+    background: #0003;
 }
 
 /* Currently selected dropdown item */
 .drop-item.drop-active {
-    background: var(--vscode-list-activeSelectionBackground);
-    color: var(--vscode-list-activeSelectionForeground);
+    background: var(--rd-active-bg);
+    color: var(--rd-active-fg);
 }
 
 /* Chevron icon inside the split-drop button; rotates when open */
@@ -589,8 +671,8 @@ button.done .btn-check {
 }
 
 .icon-svg {
-    width: 2rem;
-    height: 2rem;
+    width: 1.5rem;
+    height: 1.5rem;
     display: block;
 }
 
@@ -619,7 +701,7 @@ img:not([src]), img[src=""] {
 }
 
 .config-header:hover {
-    background: var(--vscode-list-hoverBackground);
+    background: #0003;
 }
 
 /* Arrow that rotates when the config section expands */
@@ -652,7 +734,7 @@ img:not([src]), img[src=""] {
     height: 0.4375rem;
     border-radius: 50%;
     flex-shrink: 0;
-    background: var(--vscode-foreground);
+    background: var(--rd-fg);
     opacity: 0.2;
 }
 
@@ -672,7 +754,7 @@ img:not([src]), img[src=""] {
 }
 
 .probe-dot.disconnected {
-    background: var(--vscode-foreground);
+    background: var(--rd-fg);
     opacity: 0.25;
 }
 
@@ -702,8 +784,8 @@ img:not([src]), img[src=""] {
     gap: 0.375rem;
     padding: 0.1875rem 0.375rem;
     margin-bottom: 0.25rem;
-    background: var(--vscode-editorGroupHeader-tabsBackground, rgba(128, 128, 128, 0.12));
-    border: 1px solid var(--vscode-focusBorder);
+    background: var(--rd-editor-header);
+    border: 1px solid var(--rd-focus);
     border-radius: 0.25rem;
     cursor: grab;
     user-select: none;
@@ -730,6 +812,9 @@ img:not([src]), img[src=""] {
     margin: 0;
     font-size: 0.8125rem;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Dim section content in edit mode so normal interactions are visually suppressed */
@@ -745,7 +830,7 @@ body.edit-mode .panel-section > *:not(.edit-bar) {
 
 /* Drop target indicator when dragging a section */
 .panel-section.drag-over-section {
-    border-top: 0.25rem solid var(--vscode-focusBorder);
+    border-top: 0.25rem solid var(--rd-focus);
     padding-top: 0.25rem;
 }
 
@@ -769,7 +854,7 @@ body.edit-mode .panel-section > *:not(.edit-bar) {
 }
 
 .np-hint code {
-    font-family: var(--vscode-editor-font-family, monospace);
+    font-family: var(--rd-editor-font);
 }
 
 .np-location-row {
@@ -801,9 +886,9 @@ body.edit-mode .panel-section > *:not(.edit-bar) {
     margin-bottom: 0.375rem;
     padding: 0.1875rem 0.375rem;
     font-size: 0.75rem;
-    background: var(--vscode-input-background);
-    color: var(--vscode-input-foreground);
-    border: 1px solid var(--vscode-input-border, var(--vscode-dropdown-border));
+    background: var(--rd-input-bg);
+    color: var(--rd-input-fg);
+    border: 1px solid var(--rd-input-border);
     border-radius: 0.1875rem;
     outline: none;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -811,13 +896,13 @@ body.edit-mode .panel-section > *:not(.edit-bar) {
 
 #np-name:focus,
 #np-location:focus {
-    outline: 0.15rem solid var(--vscode-focusBorder);
+    outline: 0.15rem solid var(--rd-focus);
     outline-offset: -1px;
 }
 
 #np-name.np-error,
 #np-location.np-error {
-    border-color: var(--vscode-inputValidation-errorBorder, #f44747);
+    border-color: var(--rd-error-border);
     outline: none;
 }
 
@@ -826,42 +911,55 @@ body.edit-mode .panel-section > *:not(.edit-bar) {
 }
 
 .np-board-item.np-active {
-    background: var(--vscode-list-activeSelectionBackground);
-    color: var(--vscode-list-activeSelectionForeground);
+    background: var(--rd-active-bg);
+    color: var(--rd-active-fg);
 }
 
 .np-board-item:hover:not(.np-active) {
-    background: var(--vscode-list-hoverBackground);
+    background: #0001;
 }
 
 /* Secondary "New project" button below the logo */
 .new-project-btn {
-    background: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-button-secondaryForeground);
+    background: var(--rd-btn2-bg);
+    color: var(--rd-btn2-fg);
     font-size: 0.75rem;
     min-height: 1.8rem;
     margin-bottom: 0.5rem;
 }
 
 .new-project-btn:hover {
-    background: var(--vscode-button-secondaryHoverBackground);
+    background: var(--rd-btn2-hover);
 }
 
 /* Floating tooltip shown on button hover (displays e.g. file path) */
 .btn-tooltip {
     position: fixed;
-    background: var(--vscode-editorHoverWidget-background);
-    color: var(--vscode-editorHoverWidget-foreground);
-    border: 1px solid var(--vscode-editorHoverWidget-border);
+    background: var(--rd-tooltip-bg);
+    color: var(--rd-tooltip-fg);
+    border: 1px solid var(--rd-tooltip-border);
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     font-size: 0.6875rem;
-    font-family: var(--vscode-editor-font-family, monospace);
+    font-family: var(--rd-editor-font);
     max-width: 90vw;
     word-break: break-all;
     pointer-events: none;
     z-index: 1000;
     display: none;
+    transform-origin: top center;
+    animation: tooltip-in 0.15s ease forwards;
+}
+
+@keyframes tooltip-in {
+    from {
+        opacity: 0;
+        transform: scale(0.93) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* Icon wrapper inside a button label */
@@ -894,19 +992,19 @@ button.done .btn-icon {
 .probe-name-input {
     flex: 1;
     min-width: 0;
-    background: var(--vscode-input-background);
-    color: var(--vscode-input-foreground);
-    border: 1px solid var(--vscode-input-border, var(--vscode-dropdown-border));
+    background: var(--rd-input-bg);
+    color: var(--rd-input-fg);
+    border: 1px solid var(--rd-input-border);
     padding: 2px 5px;
     font-size: 0.75rem;
-    font-family: var(--vscode-font-family);
+    font-family: var(--rd-font);
     border-radius: 2px;
     height: 1.5rem;
     box-sizing: border-box;
 }
 
 .probe-name-input:focus {
-    outline: 1px solid var(--vscode-focusBorder);
+    outline: 1px solid var(--rd-focus);
     outline-offset: -1px;
 }
 
@@ -928,10 +1026,10 @@ button.done .btn-icon {
 
 .probe-bookmark-btn,
 .probe-clear-btn {
-    background: var(--vscode-button-secondaryBackground);
+    background: var(--rd-btn2-bg);
     border: none;
     cursor: pointer;
-    color: var(--vscode-foreground);
+    color: var(--rd-fg);
     padding: 0 3px;
     font-size: 0.875rem;
     line-height: 1;
@@ -946,7 +1044,7 @@ button.done .btn-icon {
 
 .probe-clear-btn:hover {
     opacity: 1;
-    color: var(--vscode-errorForeground);
+    color: var(--rd-error-fg);
 }
 
 /* === Styles moved from inline === */
@@ -979,6 +1077,7 @@ button.done .btn-icon {
 /* Port selector row */
 .port-row {
     display: flex;
+    align-items: center;
     gap: 0.25rem;
     margin-bottom: 0.5rem;
 }
@@ -1016,7 +1115,6 @@ button.done .btn-icon {
 }
 
 /* Universal hover border for all selectable UI elements */
-button:hover,
 input:hover,
 .cs-btn:hover,
 .file-item:hover,
@@ -1024,6 +1122,6 @@ input:hover,
 .config-header:hover,
 .np-board-item:hover,
 .lib-item button:hover {
-    outline: 1px solid var(--vscode-focusBorder) !important;
+    outline: 1px solid var(--rd-focus) !important;
     outline-offset: -1px;
 }

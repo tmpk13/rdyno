@@ -120,7 +120,9 @@
     - [ ] make so directory can be used as remote repo
     - [ ] make so cache dir can be set to draw from
 
-- [ ] Add border on hover
+- [x] Add border on hover
+
+- [ ] Collapse boards with the same source directory in board library
 
 # ?
 - [ ] integrate installer for board toolchains??
