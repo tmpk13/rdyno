@@ -1,6 +1,17 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { getActiveBoard, getEffectivePort } from "./boardConfig";
-import { spawn } from "child_process";
+
+function getCrateName(): string | undefined {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders || folders.length === 0) { return undefined; }
+  const cargoPath = path.join(folders[0].uri.fsPath, "Cargo.toml");
+  try {
+    const content = fs.readFileSync(cargoPath, "utf8");
+    return content.match(/^\s*name\s*=\s*"([^"]+)"/m)?.[1];
+  } catch { return undefined; }
+}
 
 let rttTerminal: vscode.Terminal | undefined;
 
@@ -23,5 +34,6 @@ export function startRtt(): void {
     vscode.window.showErrorMessage("RTT requires a [probe] section in the board config.");
     return;
   }
-  rttTerminal.sendText(`${probePath} attach --chip ${board.board.chip} --protocol ${board.probe.protocol}${portFlag}`);
+  const elf = (board.board.elf && board.board.elf !== "<CRATE_NAME>" ? board.board.elf : undefined) ?? getCrateName() ?? "<CRATE_NAME>";
+  rttTerminal.sendText(`${probePath} attach --chip ${board.board.chip} --protocol ${board.probe.protocol}${portFlag} target/${board.board.target}/release/${elf}`);
 }
