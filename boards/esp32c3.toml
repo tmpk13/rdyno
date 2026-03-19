@@ -6,6 +6,10 @@ target = "riscv32imc-esp-espidf"
 [run]
 command = "cargo run --release"
 
+[rtt]
+enabled  = true
+channels = [{ up = 0, name = "Terminal" }]
+
 # ---------------------------------------------------------------------------
 # [new_project] — files and settings scaffolded when creating a new project
 # ---------------------------------------------------------------------------
