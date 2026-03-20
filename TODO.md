@@ -124,5 +124,7 @@
 
 - [ ] Collapse boards with the same source directory in board library
 
+- [ ] Fix rtt detection (probe section required? esp32c3 uses espflash?)
+
 # ?
 - [ ] integrate installer for board toolchains??
