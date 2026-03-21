@@ -8,6 +8,7 @@ command = "cargo run --release"
 
 [rtt]
 enabled  = true
+command  = "espflash monitor"
 channels = [{ up = 0, name = "Terminal" }]
 
 # ---------------------------------------------------------------------------

@@ -32,9 +32,9 @@ export interface PanelLayout {
 
 export interface BoardConfig {
   board: { name: string; chip: string; target: string; elf?: string };
-  probe: { protocol: string; speed: number; port?: string };
+  probe?: { protocol: string; speed: number; port?: string };
   flash: Record<string, unknown>;
-  rtt: { enabled: boolean; channels: { up: number; name: string }[] };
+  rtt: { enabled: boolean; channels: { up: number; name: string }[]; command?: string };
   run?: { command?: string };
   new_project?: NewProjectConfig;
   actions?: Record<string, ActionConfig>;

@@ -30,8 +30,12 @@ export function startRtt(): void {
   rttTerminal.show();
   const port = getEffectivePort();
   const portFlag = port ? ` --probe ${port}` : "";
+  if (board.rtt.command) {
+    rttTerminal.sendText(board.rtt.command);
+    return;
+  }
   if (!board.probe) {
-    vscode.window.showErrorMessage("RTT requires a [probe] section in the board config.");
+    vscode.window.showErrorMessage("No monitor command configured. Add rtt.command or a [probe] section.");
     return;
   }
   const elf = (board.board.elf && board.board.elf !== "<CRATE_NAME>" ? board.board.elf : undefined) ?? getCrateName() ?? "<CRATE_NAME>";

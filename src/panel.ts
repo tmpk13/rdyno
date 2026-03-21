@@ -215,6 +215,12 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
     private startPolling(view: vscode.WebviewView) {
         const probePath = vscode.workspace.getConfiguration("rustdyno").get<string>("probersPath", "probe-rs");
         const poll = () => {
+            const board = getActiveBoard();
+            if (!board?.probe) {
+                view.webview.postMessage({ command: "probeRsStatus", data: { installed: true } });
+                view.webview.postMessage({ command: "probeStatus", data: { connected: false, probes: [], probeMap: {} } });
+                return;
+            }
             exec(`${probePath} list`, (err, stdout) => {
                 // Detect if probe-rs binary is missing (exit code 127 = command not found)
                 const notInstalled = !!err && (
@@ -278,11 +284,13 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
             case "flash":
                 if (!board) { return `${probePath} run ...`; }
                 if (board.run?.command) { return board.run.command; }
+                if (board.new_project?.runner) { return `cargo run --release`; }
                 if (!board.probe) { return "(no flash command configured)"; }
                 return `${probePath} run --chip ${board.board.chip} --protocol ${board.probe.protocol} --speed ${board.probe.speed}${portFlag} target/${board.board.target}/release/<crate>`;
             case "rtt":
                 if (!board) { return `${probePath} attach ...`; }
-                if (!board.probe) { return "(RTT requires [probe] section)"; }
+                if (board.rtt?.command) { return board.rtt.command; }
+                if (!board.probe) { return "(no monitor command configured)"; }
                 return `${probePath} attach --chip ${board.board.chip} --protocol ${board.probe.protocol}${portFlag}`;
             default:
                 return cmd;
