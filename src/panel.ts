@@ -605,3 +605,51 @@ export class BoardLibraryPanelProvider implements vscode.WebviewViewProvider {
         return loadHtml(this.ext, this.view!.webview, "library.html", "library.js");
     }
 }
+
+export class BoardMakerPanelProvider implements vscode.WebviewViewProvider {
+    public static readonly viewType = "rustdyno.boardMaker";
+
+    private view?: vscode.WebviewView;
+
+    constructor(private readonly ext: vscode.ExtensionContext) { }
+
+    resolveWebviewView(view: vscode.WebviewView) {
+        this.view = view;
+        view.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [
+                vscode.Uri.joinPath(this.ext.extensionUri, "media"),
+                vscode.Uri.joinPath(this.ext.extensionUri, "imgs"),
+            ],
+        };
+        view.webview.html = this.getHtml();
+
+        view.webview.onDidReceiveMessage(async (msg) => {
+            if (msg.command === "saveBoard") {
+                const { filename, content } = msg.data as { filename: string; content: string };
+                const dir = getBoardDir();
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir, { recursive: true });
+                }
+                const filePath = path.join(dir, filename);
+                if (fs.existsSync(filePath)) {
+                    const overwrite = await vscode.window.showWarningMessage(
+                        `${filename} already exists. Overwrite?`,
+                        "Overwrite", "Cancel"
+                    );
+                    if (overwrite !== "Overwrite") {
+                        view.webview.postMessage({ command: "saveError", data: "Save cancelled." });
+                        return;
+                    }
+                }
+                fs.writeFileSync(filePath, content, "utf-8");
+                view.webview.postMessage({ command: "saved" });
+                vscode.window.showInformationMessage(`Board saved: ${filename}`);
+            }
+        });
+    }
+
+    private getHtml(): string {
+        return loadHtml(this.ext, this.view!.webview, "board-maker.html", "board-maker.js");
+    }
+}

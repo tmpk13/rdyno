@@ -97,6 +97,11 @@
           "type": "webview",
           "id": "rustdyno.boardLibrary",
           "name": "Board Library"
+        },
+        {
+          "type": "webview",
+          "id": "rustdyno.boardMaker",
+          "name": "Board Maker"
         }
       ]
     }

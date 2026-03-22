@@ -130,5 +130,22 @@
 - [x] Tests for command output
 - [ ] Review tests add documentation for them
 
+
+- [ ] Board maker - toml generator GUI
+    - [ ] List required fields
+    - [ ] Dropdown with list options for overall
+    - [ ] Dropdown with list options for field (with options) 
+    - [ ] Arrow keys navigate the input boxes
+    - [ ] Hitting enter either
+        - a. Moves the cursor to an input to the right in the current field 
+        - b. Moves the cursor to the next line if no more inputs on row 
+        - c. creates a new field in the current section (ex. pins, create new pin alias)
+    - [ ] Pull from current toml options
+    - [ ] Have defaults for some items (like baud) but warn user if they try to submit, if they try again immediately just use defaults in the toml
+
+- [ ] Add regex assignment
+- [ ] Auto baud detection
+
+
 # ?
 - [ ] integrate installer for board toolchains??

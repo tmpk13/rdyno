@@ -1222,6 +1222,252 @@ button.done .btn-icon {
 .check-action-btn { background: #6a5acd; }
 .check-action-btn:hover { background: #7b6bd5; }
 
+/* ── Board Maker ─────────────────────────────────────────── */
+
+.bm-hint {
+    font-size: 0.75rem;
+    opacity: 0.55;
+    font-style: italic;
+    margin: 0 0 0.5rem;
+}
+
+.bm-section {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--rd-drop-border);
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.bm-section-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.5rem;
+    background: var(--rd-editor-header);
+    user-select: none;
+}
+
+.bm-section-header.bm-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.bm-section-header.bm-toggle:hover {
+    background: #0003;
+}
+
+.bm-section-arrow {
+    font-size: 0.5rem;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.bm-section-body {
+    padding: 0.375rem 0.5rem;
+}
+
+.bm-required {
+    font-weight: 400;
+    font-size: 0.65rem;
+    opacity: 0.5;
+    margin-left: 0.25rem;
+}
+
+.bm-field-row {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 0.25rem;
+}
+
+.bm-field-label {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    min-width: 5rem;
+    flex-shrink: 0;
+}
+
+.bm-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.1875rem 0.375rem;
+    font-size: 0.75rem;
+    background: var(--rd-input-bg);
+    color: var(--rd-input-fg);
+    border: 1px solid rgba(128, 128, 128, 0.35);
+    border-radius: 0.1875rem;
+    outline: none;
+    font-family: var(--rd-font);
+    transition: border-color 0.12s ease;
+}
+
+.bm-input:hover {
+    border-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.bm-input:focus {
+    outline: 3px solid var(--rd-focus) !important;
+    outline-offset: -1px;
+    border-color: transparent !important;
+}
+
+.bm-input.bm-field-error {
+    border-color: var(--rd-error-border) !important;
+    outline: none !important;
+}
+
+.bm-select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.1875rem 0.375rem;
+    font-size: 0.75rem;
+    background: var(--rd-drop-bg);
+    color: var(--rd-drop-fg);
+    border: 1px solid var(--rd-drop-border);
+    border-radius: 0.1875rem;
+    font-family: var(--rd-font);
+}
+
+.bm-check {
+    width: auto;
+    flex-shrink: 0;
+}
+
+/* Combo box (input + dropdown list) */
+.bm-combo-wrap {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+}
+
+.bm-combo-input {
+    width: 100%;
+}
+
+.bm-combo-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    max-height: 10rem;
+    overflow-y: auto;
+    background: var(--rd-drop-bg);
+    border: 1px solid var(--rd-drop-border);
+    border-radius: 0.25rem;
+    margin-top: 2px;
+}
+
+.bm-combo-item {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.bm-combo-item:hover {
+    background: var(--rd-active-bg);
+    color: var(--rd-active-fg);
+}
+
+/* RTT channel rows */
+.bm-channel-row {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.bm-channel-up {
+    width: 3rem !important;
+    flex: 0 0 3rem !important;
+}
+
+.bm-channel-name {
+    flex: 1 !important;
+}
+
+.bm-remove-channel {
+    width: 1.5rem !important;
+    min-height: 1.5rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    background: var(--rd-btn2-bg);
+    color: var(--rd-fg);
+    opacity: 0.5;
+}
+
+.bm-remove-channel:hover {
+    opacity: 1;
+    color: var(--rd-error-fg);
+}
+
+.bm-add-btn {
+    font-size: 0.7rem;
+    min-height: 1.5rem;
+    background: transparent;
+    color: var(--rd-fg);
+    border: 1px dashed rgba(128, 128, 128, 0.4);
+    opacity: 0.6;
+}
+
+.bm-add-btn:hover {
+    opacity: 1;
+    border-color: var(--rd-focus);
+}
+
+.bm-actions {
+    margin-top: 0.5rem;
+}
+
+.bm-preview-btn {
+    background: transparent;
+    color: var(--rd-fg);
+    border: 1px solid rgba(128, 128, 128, 0.35);
+    font-size: 0.75rem;
+    min-height: 1.75rem;
+    opacity: 0.7;
+}
+
+.bm-preview-btn:hover {
+    opacity: 1;
+}
+
+.bm-preview {
+    font-family: var(--rd-editor-font);
+    font-size: 0.7rem;
+    background: var(--rd-input-bg);
+    border: 1px solid var(--rd-drop-border);
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    overflow-x: auto;
+    white-space: pre;
+    margin-top: 0.25rem;
+}
+
+.bm-warning {
+    font-size: 0.7rem;
+    color: #d1a618;
+    margin-bottom: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(209, 166, 24, 0.1);
+    border: 1px solid rgba(209, 166, 24, 0.3);
+    border-radius: 0.1875rem;
+}
+
+.bm-error {
+    font-size: 0.7rem;
+    color: var(--rd-error-fg);
+    margin-bottom: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    white-space: pre-line;
+}
+
 /* Universal hover border for all selectable UI elements */
 .cs-btn:hover,
 .file-item:hover,
