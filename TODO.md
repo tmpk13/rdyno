@@ -158,5 +158,12 @@
 
 - [ ] swap to vertical tabs when too thin
 
+- [ ] Add ability to set panel color and add title for window identification.
+
+- [ ] Add tooltip for `...` tab
+
+- [ ] Add esp32s3 board 
+
 # ?
 - [ ] integrate installer for board toolchains??
+

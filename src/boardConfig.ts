@@ -108,6 +108,21 @@ function writeRdynoToml(data: TOML.JsonMap): void {
   fs.writeFileSync(pickerTomlPath(), TOML.stringify(data), "utf-8");
 }
 
+export function getPanelBg(): string | undefined {
+  const data = readRdynoToml();
+  return typeof data.panel_bg === "string" ? data.panel_bg : undefined;
+}
+
+export function setPanelBg(color: string | undefined): void {
+  const data = readRdynoToml();
+  if (color) {
+    data.panel_bg = color;
+  } else {
+    delete data.panel_bg;
+  }
+  writeRdynoToml(data);
+}
+
 export function getDefaultBoardFile(): string | undefined {
   const data = readRdynoToml();
   return typeof data.default === "string" ? data.default : undefined;

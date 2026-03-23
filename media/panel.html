@@ -19,7 +19,6 @@
     </div>
     <div id="overflowTray">
       <div id="overflowDynamic"></div>
-      <div class="overflow-divider"></div>
       <div id="overflowStatic">
         <button class="tab-btn overflow-tab" onclick="showDynamicTab('newProject')">New Project</button>
         <button class="tab-btn overflow-tab" onclick="showDynamicTab('boardMaker')">Board Maker</button>
@@ -144,12 +143,31 @@
     </div>
 
     <div id="editFooter">
-      <span class="label">Edit layout</span>
-      <div id="editHeader">
-        <button class="icon-btn edit-reset-btn" id="resetLayoutBtn" onclick="resetLayout()" title="Reset layout to default">
-          <img id="editRefreshIcon" class="icon-svg">
-        </button>
-        <button class="icon-btn edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()" title="Edit panel layout">&#x270E;</button>
+      <div id="editFooterRow">
+        <span class="label">Edit layout</span>
+        <div id="editHeader">
+          <button class="icon-btn palette-btn" id="paletteToggleBtn" onclick="togglePalette()" title="Panel background color"><span id="paletteBtnSwatch" class="palette-btn-swatch"></span></button>
+          <button class="icon-btn edit-reset-btn" id="resetLayoutBtn" onclick="resetLayout()" title="Reset layout to default">
+            <img id="editRefreshIcon" class="icon-svg">
+          </button>
+          <button class="icon-btn edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()" title="Edit panel layout">&#x270E;</button>
+        </div>
+      </div>
+      <div id="paletteRow" style="display:none">
+        <button class="palette-swatch" style="background:#1e1e3a" onclick="applyPanelBg('#1e1e3a')" title="Midnight Blue"></button>
+        <button class="palette-swatch" style="background:#1a3a1a" onclick="applyPanelBg('#1a3a1a')" title="Forest Green"></button>
+        <button class="palette-swatch" style="background:#3a1a1a" onclick="applyPanelBg('#3a1a1a')" title="Dark Red"></button>
+        <button class="palette-swatch" style="background:#3a2e1a" onclick="applyPanelBg('#3a2e1a')" title="Warm Amber"></button>
+        <button class="palette-swatch" style="background:#2a1a3a" onclick="applyPanelBg('#2a1a3a')" title="Dark Purple"></button>
+        <button class="palette-swatch" style="background:#1a3a3a" onclick="applyPanelBg('#1a3a3a')" title="Dark Teal"></button>
+        <button class="palette-swatch" style="background:#2a2a2a" onclick="applyPanelBg('#2a2a2a')" title="Charcoal"></button>
+        <div class="palette-end-group">
+          <button class="palette-reset-btn" onclick="resetPanelBg()" title="Reset background">&#x21BA;</button>
+          <label class="palette-picker-btn" title="Custom color">
+            <input type="color" id="paletteColorPicker" oninput="applyPanelBg(this.value)">
+            <span>&#x2026;</span>
+          </label>
+        </div>
       </div>
     </div>
   </div>

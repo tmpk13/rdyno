@@ -125,12 +125,29 @@ function _recalcTabsImpl() {
     const overflowDynamic = document.getElementById('overflowDynamic');
     const barWidth = tabBar.offsetWidth;
 
-    // Vertical mode
+    // Vertical mode — show only the active tab + "..." button
     if (barWidth > 0 && barWidth < VERTICAL_TAB_THRESHOLD) {
         tabBar.classList.add('vertical-tabs');
         overflowDynamic.innerHTML = '';
-        // Show all tabs in vertical mode (CSS handles visibility)
-        tabRow.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-overflowed'));
+        const allVTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))
+            .filter(b => b.style.display !== 'none');
+        allVTabs.forEach(b => {
+            if (b.classList.contains('active')) {
+                b.classList.remove('tab-overflowed');
+            } else {
+                b.classList.add('tab-overflowed');
+                const clone = document.createElement('button');
+                clone.className = 'tab-btn overflow-tab';
+                clone.textContent = b.textContent;
+                const tabId = b.dataset.tab;
+                clone.addEventListener('click', () => {
+                    if (tabId === 'dynamic') showDynamicTab(currentDynamic || 'newProject');
+                    else switchTab(tabId);
+                });
+                overflowDynamic.appendChild(clone);
+            }
+        });
+        overflowBtn.style.display = '';
         return;
     }
     tabBar.classList.remove('vertical-tabs');
@@ -409,6 +426,43 @@ function onSectionDrop(e) {
     container.insertBefore(srcEl, target);
     document.querySelectorAll('.panel-section').forEach(el => el.classList.remove('drag-over-section'));
     _dragSectionId = null;
+}
+
+// ── Panel Background Palette ──
+let _paletteOpen = false;
+
+function togglePalette() {
+    _paletteOpen = !_paletteOpen;
+    const row = document.getElementById('paletteRow');
+    const btn = document.getElementById('paletteToggleBtn');
+    if (row) { row.style.display = _paletteOpen ? 'flex' : 'none'; }
+    if (btn) { btn.style.opacity = _paletteOpen ? '1' : '0.5'; }
+}
+
+function applyPanelBg(color) {
+    document.body.style.background = color;
+    const swatch = document.getElementById('paletteBtnSwatch');
+    if (swatch) {
+        swatch.style.background = color;
+        swatch.classList.add('palette-swatch-active');
+    }
+    document.querySelectorAll('.palette-swatch').forEach(el => {
+        el.classList.toggle('palette-swatch-selected', el.style.background === color || el.style.backgroundColor === color);
+    });
+    const picker = document.getElementById('paletteColorPicker');
+    if (picker && picker.value !== color) { try { picker.value = color; } catch (_) {} }
+    send('setPanelBg', color);
+}
+
+function resetPanelBg() {
+    document.body.style.background = '';
+    const swatch = document.getElementById('paletteBtnSwatch');
+    if (swatch) {
+        swatch.style.background = '';
+        swatch.classList.remove('palette-swatch-active');
+    }
+    document.querySelectorAll('.palette-swatch').forEach(el => el.classList.remove('palette-swatch-selected'));
+    send('setPanelBg', null);
 }
 
 function safeHtml(s) {
@@ -740,7 +794,7 @@ function makeActionBtn(cmd, actionCfg, files, pickedFile, uris, cmdPreviews) {
 function render(state) {
     STATE = state;
     const { files, hiddenFiles, pickedFile, boards, activeBoardFile, activeName,
-        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions, tool } = state;
+        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions, tool, panelBg } = state;
 
     _tomlLayout = layout;
     const isFirst = _firstRender;
@@ -753,6 +807,7 @@ function render(state) {
             if (layout.hidden) { _layout.hidden = layout.hidden; }
         }
         applyLayout();
+        if (panelBg) { applyPanelBg(panelBg); }
     }
 
     const fileList = document.getElementById('fileList');
