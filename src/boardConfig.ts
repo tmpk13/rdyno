@@ -10,6 +10,11 @@ export interface NewProjectFile {
   replace_if_exists?: boolean;
 }
 
+export interface GenerateCommand {
+  label: string;
+  command: string;
+}
+
 export interface NewProjectConfig {
   /** Files to create when generating a new project from this board config */
   files?: NewProjectFile[];
@@ -19,6 +24,8 @@ export interface NewProjectConfig {
   "build-dependencies"?: string;
   /** Optional .cargo/config.toml runner line */
   runner?: string;
+  /** Optional generate command(s) — string for one, array of {label, command} for multiple */
+  generate?: string | GenerateCommand[];
 }
 
 export interface ActionConfig {

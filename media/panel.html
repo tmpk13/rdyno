@@ -202,6 +202,27 @@
       <button id="np-create-btn" onclick="npCreateProject()">Create Project</button>
       <button id="np-apply-btn" onclick="npApplyBoard()">Apply Board to Current Project</button>
     </div>
+    <div id="np-generate" style="display:none">
+      <hr class="thick-divider">
+      <span class="label">Generate Project</span>
+      <div id="np-gen-dropdown-wrap" style="display:none">
+        <div class="cs-wrap">
+          <div class="cs-btn" onclick="toggleDrop(event,'menu-np-gen')">
+            <span class="cs-val" id="cs-val-np-gen">Select template&#8230;</span>
+            <img id="dropNpGen" class="drop-icon">
+          </div>
+          <div class="drop-menu" id="menu-np-gen"></div>
+        </div>
+      </div>
+      <span class="label">Project Name</span>
+      <input id="np-gen-name" type="text" placeholder="my-embedded-app" autocomplete="off" spellcheck="false" oninput="npClearError(this)">
+      <span class="label np-location-label">Location</span>
+      <div class="np-location-row">
+        <input id="np-gen-location" type="text" placeholder="Select folder&#8230;" autocomplete="off" spellcheck="false" oninput="npClearError(this)">
+        <button class="np-browse-btn" onclick="npBrowseGenLocation()" title="Browse">&#8230;</button>
+      </div>
+      <button id="np-gen-btn" onclick="npRunGenerate()">Generate Project</button>
+    </div>
   </div>
 
   <!-- ═══ Tab: Board Maker (dynamic) ═══ -->

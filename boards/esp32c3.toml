@@ -17,6 +17,14 @@ channels = [{ up = 0, name = "Terminal" }]
 [new_project]
 runner = "espflash flash --monitor"
 
+[[new_project.generate]]
+label   = "cargo generate (esp-idf-template)"
+command = "cargo generate esp-rs/esp-idf-template cargo --name {{PROJECT_NAME}}"
+
+[[new_project.generate]]
+label   = "esp-generate"
+command = "esp-generate --chip esp32c3 -o stack-smashing-protection -o esp-backtrace -o vscode {{PROJECT_NAME}}"
+
 [new_project.dependencies]
 anyhow      = "1"
 esp-idf-hal = "0.46"

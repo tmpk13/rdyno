@@ -1009,6 +1009,57 @@ function npRefreshBoards() {
     send('npRefreshBoards');
 }
 
+let npGenerateCommands = null;
+let npSelectedGenCmd = null;
+
+function npInitGenerate(commands) {
+    npGenerateCommands = commands;
+    npSelectedGenCmd = commands ? commands[0] : null;
+    const wrap = document.getElementById('np-generate');
+    if (!commands || commands.length === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    const dropWrap = document.getElementById('np-gen-dropdown-wrap');
+    const dropImg = document.getElementById('dropNpGen');
+    if (dropImg && DROP_URI) { dropImg.src = DROP_URI; }
+    if (commands.length > 1) {
+        dropWrap.style.display = '';
+        document.getElementById('cs-val-np-gen').textContent = commands[0].label;
+        const menu = document.getElementById('menu-np-gen');
+        menu.innerHTML = commands.map((c, i) =>
+            `<div class="drop-item${i === 0 ? ' drop-active' : ''}" onclick="npPickGenCmd(${i})">${esc(c.label)}</div>`
+        ).join('');
+    } else {
+        dropWrap.style.display = 'none';
+    }
+}
+
+function npPickGenCmd(idx) {
+    closeDrops();
+    npSelectedGenCmd = npGenerateCommands[idx];
+    document.getElementById('cs-val-np-gen').textContent = npSelectedGenCmd.label;
+    document.querySelectorAll('#menu-np-gen .drop-item').forEach((el, i) => {
+        el.classList.toggle('drop-active', i === idx);
+    });
+}
+
+function npBrowseGenLocation() { send('browseGenFolder'); }
+
+function npRunGenerate() {
+    const nameEl = document.getElementById('np-gen-name');
+    const locEl = document.getElementById('np-gen-location');
+    const name = nameEl.value.trim();
+    const location = locEl.value.trim();
+    nameEl.classList.remove('np-error');
+    locEl.classList.remove('np-error');
+    let valid = true;
+    if (!name || !/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(name)) { nameEl.classList.add('np-error'); valid = false; }
+    if (!location) { locEl.classList.add('np-error'); valid = false; }
+    if (!valid) { return; }
+    const cmd = npSelectedGenCmd || (npGenerateCommands && npGenerateCommands[0]);
+    if (!cmd) { return; }
+    send('generateProject', { name, location, command: cmd.command });
+}
+
 // ══════════════════════════════════════════════════════════════
 // Board Maker
 // ══════════════════════════════════════════════════════════════
@@ -1751,7 +1802,7 @@ window.addEventListener('message', e => {
 
         // ── New Project ──
         case 'npInit': {
-            const { hasConfig, hasBoardDir, boards, activeBoardFile: abf, uris } = msg.data;
+            const { hasConfig, hasBoardDir, boards, activeBoardFile: abf, uris, generateCommands } = msg.data;
             if (uris?.refresh) { document.getElementById('npRefreshIcon').src = uris.refresh; }
             npAllBoards = boards || [];
             npActiveBoardFile = abf || null;
@@ -1761,10 +1812,17 @@ window.addEventListener('message', e => {
             if (setupDiv) { setupDiv.style.display = hasBoardDir ? 'none' : ''; }
             document.getElementById('np-hint').style.display = hasConfig ? 'none' : '';
             document.getElementById('np-action').style.display = hasConfig ? 'block' : 'none';
+            npInitGenerate(generateCommands || null);
             break;
         }
         case 'browseResult': {
             const locEl = document.getElementById('np-location');
+            locEl.value = msg.data;
+            locEl.classList.remove('np-error');
+            break;
+        }
+        case 'browseGenResult': {
+            const locEl = document.getElementById('np-gen-location');
             locEl.value = msg.data;
             locEl.classList.remove('np-error');
             break;

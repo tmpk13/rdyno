@@ -210,6 +210,16 @@ function quickCheckFiles(projectDir: string, files: NewProjectFile[]): void {
     }
 }
 
+export function runGenerateCommand(command: string, projectName: string, location: string): void {
+    const injected = command.replaceAll("{{PROJECT_NAME}}", projectName);
+    const terminal = vscode.window.createTerminal({
+        name: `Generate: ${projectName}`,
+        cwd: location,
+    });
+    terminal.show();
+    terminal.sendText(injected);
+}
+
 export function addDependencies(projectDir: string, deps: string): void {
     const cargoPath = path.join(projectDir, "Cargo.toml");
     if (!fs.existsSync(cargoPath)) { return; }

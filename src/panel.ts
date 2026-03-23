@@ -11,7 +11,7 @@ const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
 };
 import { getActiveFile, getCachedFiles, getHiddenFiles, hideFile, openFile, refreshFiles, reorderFiles, unhideFile } from "./filePicker";
 import { fetchLibraryList, downloadBoardToWorkspace, addBoardFromCache, listCachedBoards, isBoardInWorkspace, removeBoard, fetchBoardContent, getWorkspaceBoardContent, updateBoardInWorkspace, fetchExamplesList } from "./boardLibrary";
-import { createNewProject, applyBoardToProject, showApplyResult } from "./newProject";
+import { createNewProject, applyBoardToProject, showApplyResult, runGenerateCommand } from "./newProject";
 import { flash } from "./flasher";
 import { runCheckAndClippy } from "./checker";
 
@@ -396,6 +396,24 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     break;
                 }
 
+                case "browseGenFolder": {
+                    const picked = await vscode.window.showOpenDialog({
+                        canSelectFiles: false,
+                        canSelectFolders: true,
+                        canSelectMany: false,
+                        openLabel: "Select folder",
+                    });
+                    if (picked?.[0]) {
+                        view.webview.postMessage({ command: "browseGenResult", data: picked[0].fsPath });
+                    }
+                    break;
+                }
+                case "generateProject": {
+                    const { name, location, command } = msg.data as { name: string; location: string; command: string };
+                    runGenerateCommand(command, name, location);
+                    break;
+                }
+
                 // ── Board Maker ──
                 case "saveBoard": {
                     const { filename, content } = msg.data as { filename: string; content: string };
@@ -482,14 +500,24 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
         const webview = this.view.webview;
         const uri = (rel: string) => webview.asWebviewUri(vscode.Uri.joinPath(this.ext.extensionUri, rel)).toString();
         const board = getActiveBoard();
+
+        const generateRaw = board?.new_project?.generate;
+        let generateCommands: { label: string; command: string }[] | null = null;
+        if (typeof generateRaw === "string" && generateRaw.trim()) {
+            generateCommands = [{ label: "Generate", command: generateRaw }];
+        } else if (Array.isArray(generateRaw) && generateRaw.length > 0) {
+            generateCommands = generateRaw as { label: string; command: string }[];
+        }
+
         webview.postMessage({
             command: "npInit",
             data: {
-                hasConfig: !!board?.new_project,
+                hasConfig: !!(board?.new_project?.files?.length || board?.new_project?.dependencies),
                 hasBoardDir: fs.existsSync(getBoardDir()),
                 boardName: board?.board.name ?? "no board selected",
                 boards: listBoards(),
                 activeBoardFile: getActiveBoardFile(),
+                generateCommands,
                 uris: { drop: uri("imgs/drop.svg"), refresh: uri("imgs/refresh.svg") },
             },
         });

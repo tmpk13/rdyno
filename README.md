@@ -14,8 +14,18 @@ Tests: `bun run test:unit`
 
 <hr>
 
-### Requires probe-rs
-[probe-rs](https://probe.rs/)
+## Required CLI Tools
+
+Install the tools for the boards you intend to use.
+
+| Tool | Used by | Install |
+|---|---|---|
+| [probe-rs](https://probe.rs/) | STM32, nRF, RP2040/RP2350, micro:bit (all SWD boards) | `cargo install probe-rs-tools` |
+| [espflash](https://github.com/esp-rs/espflash) | ESP32-C3 | `cargo install espflash` |
+| [ravedude](https://github.com/Rahix/avr-hal/tree/main/ravedude) | Arduino Nano (ATmega328P) | `cargo install ravedude` |
+| [teensy_loader_cli](https://github.com/PaulStoffregen/teensy_loader_cli) | Teensy 2, 3.2, 4.0, 4.1 | package manager or build from source |
+| `arm-none-eabi-objcopy` | Teensy 3.2, 4.0, 4.1 (ELF → HEX) | `apt install gcc-arm-none-eabi` / `brew install arm-none-eabi-binutils` |
+| `avr-objcopy` | Teensy 2.0 (ELF → HEX) | `apt install binutils-avr` / `brew install avr-binutils` |
 
 <hr>
 
