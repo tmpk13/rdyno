@@ -124,7 +124,7 @@
 
 - [ ] Collapse boards with the same source directory in board library
 
-- [ ] Fix rtt detection (probe section required? esp32c3 uses espflash?)
+- [x] Fix rtt detection (probe section required? esp32c3 uses espflash?)
 
 - [x] Tests for file creation
 - [x] Tests for command output
@@ -146,6 +146,9 @@
 - [ ] Add regex assignment
 - [ ] Auto baud detection
 
+- [ ] Add tool install check and install button, ex espflash/toolchain
+
+- [ ] Swap to using flex UI
 
 # ?
 - [ ] integrate installer for board toolchains??

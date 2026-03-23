@@ -8,14 +8,18 @@
 <body>
   <!-- ═══ Tab Bar ═══ -->
   <div id="tabBar">
-    <button class="tab-btn active" data-tab="controls" onclick="switchTab('controls')">Controls</button>
-    <button class="tab-btn" data-tab="library" onclick="switchTab('library')">Library</button>
-    <button class="tab-btn" data-tab="examples" onclick="switchTab('examples')">Examples</button>
-    <button class="tab-btn tab-dynamic" data-tab="dynamic" style="display:none" onclick="switchTab('dynamic')"></button>
-    <button class="tab-overflow-btn" onclick="toggleOverflow(event)">&#x2026;</button>
-    <div id="overflowMenu" class="overflow-menu">
-      <div class="overflow-item" data-panel="newProject" onclick="showDynamicTab('newProject')">New Project</div>
-      <div class="overflow-item" data-panel="boardMaker" onclick="showDynamicTab('boardMaker')">Board Maker</div>
+    <div id="tabRowWrap">
+      <div id="tabRow">
+        <button class="tab-btn active" data-tab="controls" onclick="switchTab('controls')">Controls</button>
+        <button class="tab-btn" data-tab="library" onclick="switchTab('library')">Library</button>
+        <button class="tab-btn" data-tab="examples" onclick="switchTab('examples')">Examples</button>
+        <button class="tab-btn tab-dynamic" data-tab="dynamic" style="display:none" onclick="switchTab('dynamic')"></button>
+      </div>
+      <button class="tab-overflow-btn" onclick="toggleOverflow(event)">&#x2026;</button>
+    </div>
+    <div id="overflowTray">
+      <button class="tab-btn overflow-tab" onclick="showDynamicTab('newProject')">New Project</button>
+      <button class="tab-btn overflow-tab" onclick="showDynamicTab('boardMaker')">Board Maker</button>
     </div>
   </div>
 

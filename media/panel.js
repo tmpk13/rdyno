@@ -106,19 +106,33 @@ function showDynamicTab(panelId) {
     }
 }
 
+let _overflowTimer = null;
+
 function toggleOverflow(e) {
     if (e) e.stopPropagation();
-    const menu = document.getElementById('overflowMenu');
-    menu.classList.toggle('open');
+    const tray = document.getElementById('overflowTray');
+    tray.classList.toggle('open');
+    if (tray.classList.contains('open')) {
+        clearTimeout(_overflowTimer);
+    }
 }
 
 function closeOverflow() {
-    document.getElementById('overflowMenu').classList.remove('open');
+    clearTimeout(_overflowTimer);
+    document.getElementById('overflowTray').classList.remove('open');
 }
 
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.tab-overflow-btn') && !e.target.closest('.overflow-menu')) {
-        closeOverflow();
+function _startOverflowTimer() {
+    clearTimeout(_overflowTimer);
+    _overflowTimer = setTimeout(closeOverflow, 3000);
+}
+
+document.getElementById('overflowTray').addEventListener('mouseenter', () => clearTimeout(_overflowTimer));
+document.getElementById('overflowTray').addEventListener('mouseleave', _startOverflowTimer);
+document.querySelector('.tab-overflow-btn').addEventListener('mouseenter', () => clearTimeout(_overflowTimer));
+document.querySelector('.tab-overflow-btn').addEventListener('mouseleave', () => {
+    if (document.getElementById('overflowTray').classList.contains('open')) {
+        _startOverflowTimer();
     }
 });
 
