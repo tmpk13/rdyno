@@ -519,6 +519,29 @@ function basename(p) {
     return p.split(/[\\/]/).pop() || p;
 }
 
+// Returns a map of path → unique short label, deterministic via alphabetical sort of full paths.
+// Duplicates get " (2)", " (3)", etc. in alphabetical order of full path.
+function makeShortLabels(paths) {
+    const sorted = [...paths].sort((a, b) => a.localeCompare(b));
+    const nameCount = {};
+    for (const p of sorted) {
+        const n = basename(p);
+        nameCount[n] = (nameCount[n] || 0) + 1;
+    }
+    const nameIdx = {};
+    const result = {};
+    for (const p of sorted) {
+        const n = basename(p);
+        if (nameCount[n] > 1) {
+            nameIdx[n] = (nameIdx[n] || 0) + 1;
+            result[p] = nameIdx[n] === 1 ? n : `${n} (${nameIdx[n]})`;
+        } else {
+            result[p] = n;
+        }
+    }
+    return result;
+}
+
 function startSpin(btn, cmd, data) {
     if (btn.classList.contains('loading') || btn.classList.contains('done')) { return; }
     btn.classList.add('loading');
@@ -532,8 +555,7 @@ function startSpin(btn, cmd, data) {
 }
 
 function findFlashBtn() {
-    return document.querySelector('#grp-flash .split-main') ||
-           document.querySelector('[data-action="flash"]');
+    return document.querySelector('[data-action="flash"]');
 }
 
 function startFlash(btn) {
@@ -587,13 +609,9 @@ function toggleDrop(e, id) {
 }
 function closeDrops() {
     document.querySelectorAll('.drop-menu.open').forEach(m => m.classList.remove('open'));
-    document.querySelectorAll('.split-drop.open, .cs-btn.open').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.cs-btn.open').forEach(b => b.classList.remove('open'));
 }
-function pickTarget(file, cmd) {
-    closeDrops();
-    const btn = document.querySelector('#grp-' + cmd + ' .split-main');
-    startSpin(btn, 'selectAndRun', { file, cmd });
-}
+
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.tab-overflow-btn') && !e.target.closest('.overflow-menu')) {
         closeDrops();
@@ -760,9 +778,8 @@ function cloneTpl(id) {
     return document.getElementById(id).content.cloneNode(true).firstElementChild;
 }
 
-function makeFileItem(f, i, pickedFile) {
+function makeFileItem(f, i, label) {
     const el = cloneTpl('tpl-file-item');
-    if (f === pickedFile) { el.classList.add('active'); }
     el.dataset.file = f;
     el.dataset.index = String(i);
     el.title = f;
@@ -771,7 +788,7 @@ function makeFileItem(f, i, pickedFile) {
     el.addEventListener('dragover', e => onDragOver(e, +e.currentTarget.dataset.index));
     el.addEventListener('drop', e => onDrop(e, +e.currentTarget.dataset.index));
     el.addEventListener('click', e => onItemClick(e, f));
-    el.querySelector('.file-name').textContent = basename(f);
+    el.querySelector('.file-name').textContent = label;
     el.querySelector('.remove-btn').addEventListener('click', e => {
         e.stopPropagation();
         send('hideFile', f);
@@ -779,10 +796,10 @@ function makeFileItem(f, i, pickedFile) {
     return el;
 }
 
-function makeHiddenItem(f) {
+function makeHiddenItem(f, label) {
     const el = cloneTpl('tpl-hidden-item');
     el.title = f;
-    el.querySelector('.file-name').textContent = basename(f);
+    el.querySelector('.file-name').textContent = label;
     el.querySelector('.remove-btn').addEventListener('click', e => {
         e.stopPropagation();
         send('unhideFile', f);
@@ -798,49 +815,27 @@ function makeDropItem(label, isActive, onClick) {
     return el;
 }
 
-function makeActionBtn(cmd, actionCfg, files, pickedFile, uris, cmdPreviews) {
+function makeActionBtn(cmd, actionCfg, uris, cmdPreviews) {
     const { label, color } = actionCfg;
     const tipCmd = cmdPreviews[cmd];
-    if (files.length > 1) {
-        const el = cloneTpl('tpl-action-split');
-        el.id = 'grp-' + cmd;
-        const main = el.querySelector('.split-main');
-        main.style.background = color;
-        main.dataset.tipLabel = label;
-        main.dataset.tipCmd = tipCmd;
-        main.dataset.action = cmd;
-        main.addEventListener('click', () => sendAction(main, cmd));
-        main.querySelector('.btn-label').textContent = label;
-        main.querySelector('.btn-run-icon').src = uris.run;
-        main.querySelector('.btn-check-icon').src = uris.check;
-        main.querySelector('.btn-spin-icon').src = uris.refresh;
-        const splitDrop = el.querySelector('.split-drop');
-        splitDrop.style.background = color;
-        splitDrop.querySelector('.drop-icon').src = uris.drop;
-        splitDrop.addEventListener('click', e => toggleDrop(e, 'menu-' + cmd));
-        const menu = el.querySelector('.drop-menu');
-        menu.id = 'menu-' + cmd;
-        files.forEach(f => menu.appendChild(makeDropItem(basename(f), f === pickedFile, () => pickTarget(f, cmd))));
-        return el;
-    } else {
-        const el = cloneTpl('tpl-action-simple');
-        el.style.background = color;
-        el.dataset.tipLabel = label;
-        el.dataset.tipCmd = tipCmd;
-        el.dataset.action = cmd;
-        el.addEventListener('click', () => sendAction(el, cmd));
-        el.querySelector('.btn-label').textContent = label;
-        el.querySelector('.btn-run-icon').src = uris.run;
-        el.querySelector('.btn-check-icon').src = uris.check;
-        el.querySelector('.btn-spin-icon').src = uris.refresh;
-        return el;
-    }
+    const el = cloneTpl('tpl-action-simple');
+    el.style.background = color;
+    el.dataset.tipLabel = label;
+    el.dataset.tipCmd = tipCmd;
+    el.dataset.action = cmd;
+    el.addEventListener('click', () => sendAction(el, cmd));
+    el.querySelector('.btn-label').textContent = label;
+    el.querySelector('.btn-run-icon').src = uris.run;
+    el.querySelector('.btn-check-icon').src = uris.check;
+    el.querySelector('.btn-spin-icon').src = uris.refresh;
+    return el;
 }
 
 function render(state) {
     STATE = state;
-    const { files, hiddenFiles, pickedFile, boards, activeBoardFile, activeName,
+    const { files, hiddenFiles, binTargets, pickedFile, boards, activeBoardFile, activeName,
         effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions, tool, panelBg } = state;
+    const _binTargets = binTargets || [];
 
     _tomlLayout = layout;
     const isFirst = _firstRender;
@@ -856,10 +851,13 @@ function render(state) {
         if (panelBg) { applyPanelBg(panelBg); }
     }
 
+    // Compute labels across all files (visible + hidden) for consistent deterministic naming
+    const allFileLabels = makeShortLabels([...files, ...hiddenFiles]);
+
     const fileList = document.getElementById('fileList');
     fileList.innerHTML = '';
     if (files.length) {
-        files.forEach((f, i) => fileList.appendChild(makeFileItem(f, i, pickedFile)));
+        files.forEach((f, i) => fileList.appendChild(makeFileItem(f, i, allFileLabels[f])));
     } else {
         fileList.innerHTML = '<div class="file-empty">No files found</div>';
     }
@@ -867,7 +865,7 @@ function render(state) {
     const hiddenList = document.getElementById('hiddenList');
     hiddenList.innerHTML = '';
     if (hiddenFiles.length) {
-        hiddenFiles.forEach(f => hiddenList.appendChild(makeHiddenItem(f)));
+        hiddenFiles.forEach(f => hiddenList.appendChild(makeHiddenItem(f, allFileLabels[f])));
     } else {
         hiddenList.innerHTML = '<div class="file-empty">No hidden files</div>';
     }
@@ -893,7 +891,7 @@ function render(state) {
     actionBtns.innerHTML = '';
     ['build', 'flash'].forEach(cmd => {
         const cfg = actions?.[cmd] ?? { label: cmd[0].toUpperCase() + cmd.slice(1), color: '#4caf50' };
-        actionBtns.appendChild(makeActionBtn(cmd, cfg, files, pickedFile, uris, cmdPreviews));
+        actionBtns.appendChild(makeActionBtn(cmd, cfg, uris, cmdPreviews));
     });
 
     const checkArea = document.getElementById('checkBtnArea');
@@ -908,13 +906,15 @@ function render(state) {
         rttBtn.querySelector('.btn-label').textContent = actions.rtt.label;
     }
 
-    document.getElementById('cs-val-target').textContent = pickedFile ? basename(pickedFile) : 'No files';
+    const targetLabels = makeShortLabels(_binTargets.map(t => t.path));
+    const activeTarget = pickedFile || (_binTargets.find(t => basename(t.path) === 'main.rs') ?? _binTargets[0])?.path;
+    document.getElementById('cs-val-target').textContent = activeTarget ? (targetLabels[activeTarget] ?? basename(activeTarget)) : 'No targets';
     const menuTarget = document.getElementById('menu-target');
     menuTarget.innerHTML = '';
-    if (files.length) {
-        files.forEach(f => menuTarget.appendChild(makeDropItem(basename(f), f === pickedFile, () => send('setTarget', f))));
+    if (_binTargets.length) {
+        _binTargets.forEach(t => menuTarget.appendChild(makeDropItem(targetLabels[t.path], t.path === activeTarget, () => send('setTarget', t.path))));
     } else {
-        menuTarget.innerHTML = '<div class="drop-item" style="opacity:0.5;cursor:default">No files</div>';
+        menuTarget.innerHTML = '<div class="drop-item" style="opacity:0.5;cursor:default">No targets</div>';
     }
 
     const portDisplayName = effectivePort ? (_probeMap[effectivePort]?.name || effectivePort) : 'auto';

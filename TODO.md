@@ -166,8 +166,11 @@
 
 - [ ] Short names get arbitrary numbers at end of names
 
-- [ ] Remove split main
-- [ ] Remove drop-icon buttons in the action buttons
+- [x] Remove split main
+- [x] Remove drop-icon buttons in the action buttons
+
+- [ ] Attempt to auto detect board and ask to use/download (non intrusive (Don't focus))
+        from the long/short name - use closest as default if not set in rustdyno
 
 # ?
 - [ ] integrate installer for board toolchains??

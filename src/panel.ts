@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { exec } from "child_process";
-import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getBoardDir, getEffectivePort, getLayout, getPortOverride, getDefaultTargetFile, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setDefaultTargetFile, setLayout, setPortOverride, getProbeMap, setProbeMapping, clearProbeBoard, setupBoardDir, ToolInstallConfig, getPanelBg, setPanelBg, getCargoTargets, BinTarget } from "./boardConfig";
+import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getBoardDir, getEffectivePort, getLayout, getPortOverride, getDefaultTargetFile, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setDefaultTargetFile, setLayout, setPortOverride, getProbeMap, setProbeMapping, clearProbeBoard, setupBoardDir, ToolInstallConfig, getPanelBg, setPanelBg, getCargoTargets } from "./boardConfig";
 
 const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
     build: { label: "Build", color: "#1e7ec8" },
@@ -493,7 +493,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
             data: {
                 files: getCachedFiles(),
                 hiddenFiles: getHiddenFiles(),
-                binTargets: getCargoTargets() as BinTarget[],
+                binTargets: getCargoTargets(),
                 pickedFile: getActiveFile(),
                 boards: listBoards(),
                 activeBoardFile: getActiveBoardFile(),
