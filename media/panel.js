@@ -108,9 +108,21 @@ function showDynamicTab(panelId) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// Tab layout config (defaults — overridden by rustdyno.toml)
+// ══════════════════════════════════════════════════════════════
+let _tabVertical = true;
+let _tabAutoCollapseSec = 5;
+
+function applyTabConfig(cfg) {
+    if (!cfg) return;
+    if (typeof cfg.vertical === 'boolean') _tabVertical = cfg.vertical;
+    if (typeof cfg.auto_collapse_seconds === 'number') _tabAutoCollapseSec = cfg.auto_collapse_seconds;
+    recalcTabs();
+}
+
+// ══════════════════════════════════════════════════════════════
 // Responsive tab overflow / vertical layout
 // ══════════════════════════════════════════════════════════════
-const VERTICAL_TAB_THRESHOLD = 200;
 let _recalcRAF = null;
 
 function recalcTabs() {
@@ -123,10 +135,9 @@ function _recalcTabsImpl() {
     const tabRow = document.getElementById('tabRow');
     const overflowBtn = document.querySelector('.tab-overflow-btn');
     const overflowDynamic = document.getElementById('overflowDynamic');
-    const barWidth = tabBar.offsetWidth;
 
-    // Vertical mode — show only the active tab + "..." button
-    if (barWidth > 0 && barWidth < VERTICAL_TAB_THRESHOLD) {
+    if (_tabVertical) {
+        // Vertical mode — show only the active tab + "..." button
         tabBar.classList.add('vertical-tabs');
         overflowDynamic.innerHTML = '';
         const allVTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))
@@ -150,23 +161,22 @@ function _recalcTabsImpl() {
         overflowBtn.style.display = '';
         return;
     }
+
+    // Horizontal mode (opt-in via config)
     tabBar.classList.remove('vertical-tabs');
 
     // Reset all tabs to visible for measurement
     const allTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))
-        .filter(b => b.style.display !== 'none'); // skip hidden dynamic tab
+        .filter(b => b.style.display !== 'none');
     allTabs.forEach(b => b.classList.remove('tab-overflowed'));
     overflowDynamic.innerHTML = '';
 
-    // Measure available width (row minus overflow button)
     const availableWidth = tabRow.clientWidth;
     const btnWidth = overflowBtn.offsetWidth;
 
-    // Measure each tab's natural width
     let usedWidth = 0;
     let overflowStartIdx = -1;
 
-    // Temporarily prevent flex shrink for accurate measurement
     allTabs.forEach(b => b.style.flexShrink = '0');
     for (let i = 0; i < allTabs.length; i++) {
         usedWidth += allTabs[i].offsetWidth;
@@ -178,30 +188,24 @@ function _recalcTabsImpl() {
     allTabs.forEach(b => b.style.flexShrink = '');
 
     if (overflowStartIdx === -1) {
-        // All tabs fit — keep overflow button for static items (New Project, Board Maker)
         overflowBtn.style.display = '';
         return;
     }
 
     overflowBtn.style.display = '';
 
-    // Ensure active tab stays visible — swap with last visible if needed
     const activeIdx = allTabs.findIndex(b => b.classList.contains('active'));
     if (activeIdx >= overflowStartIdx) {
-        // Swap active tab to the last visible position
         const lastVisibleIdx = overflowStartIdx - 1;
         if (lastVisibleIdx >= 0) {
             const activeTab = allTabs[activeIdx];
             const lastVisible = allTabs[lastVisibleIdx];
-            // DOM swap
             tabRow.insertBefore(activeTab, lastVisible);
-            // Update array to match
             allTabs.splice(activeIdx, 1);
             allTabs.splice(lastVisibleIdx, 0, activeTab);
         }
     }
 
-    // Re-measure after potential swap to get accurate cutoff
     usedWidth = 0;
     overflowStartIdx = -1;
     allTabs.forEach(b => b.style.flexShrink = '0');
@@ -216,7 +220,6 @@ function _recalcTabsImpl() {
 
     if (overflowStartIdx === -1) return;
 
-    // Mark overflowed tabs and clone into tray
     for (let i = overflowStartIdx; i < allTabs.length; i++) {
         allTabs[i].classList.add('tab-overflowed');
         const clone = document.createElement('button');
@@ -237,6 +240,9 @@ function toggleOverflow(e) {
     tray.classList.toggle('open');
     if (tray.classList.contains('open')) {
         clearTimeout(_overflowTimer);
+        _startOverflowTimer();
+    } else {
+        clearTimeout(_overflowTimer);
     }
 }
 
@@ -247,7 +253,9 @@ function closeOverflow() {
 
 function _startOverflowTimer() {
     clearTimeout(_overflowTimer);
-    _overflowTimer = setTimeout(closeOverflow, 3000);
+    if (_tabAutoCollapseSec > 0) {
+        _overflowTimer = setTimeout(closeOverflow, _tabAutoCollapseSec * 1000);
+    }
 }
 
 document.getElementById('overflowTray').addEventListener('mouseenter', () => clearTimeout(_overflowTimer));
@@ -931,7 +939,7 @@ function makeActionBtn(cmd, actionCfg, uris, cmdPreviews) {
 function render(state) {
     STATE = state;
     const { files, hiddenFiles, binTargets, pickedFile, boards, activeBoardFile, activeName,
-        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions, tool, panelBg } = state;
+        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions, tool, panelBg, tabConfig } = state;
     const _binTargets = binTargets || [];
 
     _tomlLayout = layout;
@@ -946,6 +954,7 @@ function render(state) {
         }
         applyLayout();
         if (panelBg) { applyPanelBg(panelBg); }
+        applyTabConfig(tabConfig);
     }
 
     // Compute labels across all files (visible + hidden) for consistent deterministic naming

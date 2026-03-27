@@ -54,6 +54,13 @@ export interface PanelLayout {
   hidden: string[];
 }
 
+export interface TabConfig {
+  vertical: boolean;
+  auto_collapse_seconds: number;
+}
+
+const TAB_CONFIG_DEFAULTS: TabConfig = { vertical: true, auto_collapse_seconds: 5 };
+
 export interface BoardConfig {
   board: { name: string; chip: string; target: string; elf?: string };
   probe?: { protocol: string; speed: number; port?: string };
@@ -121,6 +128,21 @@ export function setPanelBg(color: string | undefined): void {
   } else {
     delete data.panel_bg;
   }
+  writeRdynoToml(data);
+}
+
+export function getTabConfig(): TabConfig {
+  const data = readRdynoToml();
+  return {
+    vertical: typeof data.tabs_vertical === "boolean" ? data.tabs_vertical : TAB_CONFIG_DEFAULTS.vertical,
+    auto_collapse_seconds: typeof data.tabs_auto_collapse_seconds === "number" ? data.tabs_auto_collapse_seconds : TAB_CONFIG_DEFAULTS.auto_collapse_seconds,
+  };
+}
+
+export function setTabConfig(cfg: Partial<TabConfig>): void {
+  const data = readRdynoToml();
+  if (cfg.vertical !== undefined) { data.tabs_vertical = cfg.vertical; }
+  if (cfg.auto_collapse_seconds !== undefined) { data.tabs_auto_collapse_seconds = cfg.auto_collapse_seconds; }
   writeRdynoToml(data);
 }
 

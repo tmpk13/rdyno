@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { exec } from "child_process";
-import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getBoardDir, getEffectivePort, getLayout, getPortOverride, getDefaultTargetFile, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setDefaultTargetFile, setLayout, setPortOverride, getProbeMap, setProbeMapping, clearProbeBoard, setupBoardDir, ToolInstallConfig, getPanelBg, setPanelBg, getCargoTargets } from "./boardConfig";
+import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getBoardDir, getEffectivePort, getLayout, getPortOverride, getDefaultTargetFile, listBoards, PanelLayout, selectBoardByFile, setDefaultBoardFile, setDefaultTargetFile, setLayout, setPortOverride, getProbeMap, setProbeMapping, clearProbeBoard, setupBoardDir, ToolInstallConfig, getPanelBg, setPanelBg, getCargoTargets, getTabConfig, setTabConfig, TabConfig } from "./boardConfig";
 
 const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
     build: { label: "Build", color: "#1e7ec8" },
@@ -107,6 +107,9 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     break;
                 case "setPanelBg":
                     setPanelBg(msg.data as string | undefined);
+                    break;
+                case "setTabConfig":
+                    setTabConfig(msg.data as Partial<TabConfig>);
                     break;
                 case "setTarget":
                     openFile(msg.data);
@@ -522,6 +525,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                 layout: getLayout() ?? null,
                 checkEnabled: this._checkEnabled,
                 panelBg: getPanelBg() ?? null,
+                tabConfig: getTabConfig(),
             },
         });
     }
