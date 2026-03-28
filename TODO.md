@@ -175,27 +175,27 @@
 - [ ] Add esp-generate support
 
 - [?] Add append if exists flag for file generation. Sections may be marked append
- - [x] Swap dependencies to a string
- -  ```
-    append_if_exists = false
-    content = """
-    [new_project]
-    runner = "probe-rs run --chip STM32F103C8Tx --protocol swd"
-    """
-    append_if_exists = true
-    content = """
-    [new_project.dependencies]
-    cortex-m     = { version = "0.7.7", features = ["critical-section-single-core"] }
-    cortex-m-rt  = "0.7.5"
-    nb           = "1.1"
-    panic-halt   = "1.0"
-    rtt-target   = "0.6"
-    stm32f1xx-hal = { version = "0.11", features = ["stm32f103", "rt"] }
-    """
-    ```
+    - [x] Swap dependencies to a string
+    -  ```
+        append_if_exists = false
+        content = """
+        [new_project]
+        runner = "probe-rs run --chip STM32F103C8Tx --protocol swd"
+        """
+        append_if_exists = true
+        content = """
+        [new_project.dependencies]
+        cortex-m     = { version = "0.7.7", features = ["critical-section-single-core"] }
+        cortex-m-rt  = "0.7.5"
+        nb           = "1.1"
+        panic-halt   = "1.0"
+        rtt-target   = "0.6"
+        stm32f1xx-hal = { version = "0.11", features = ["stm32f103", "rt"] }
+        """
+        ```
 
 - Add animations
- - [ ] Tooltips expand left to right, snap out
+    - [ ] Tooltips expand left to right, snap out
 
 - [ ] Add repo list UI for adding repos
         Clickable list. Double click or click edit icon to edit.
@@ -211,8 +211,8 @@
         ```
 
 - [x] Add tests for project creation
- - [x] Test with existing and new projects
- - [x] Make sure backups for overwritten files are correct
+    - [x] Test with existing and new projects
+    - [x] Make sure backups for overwritten files are correct
 
 - [x] Make tooltips in html more concise to fit better, Don't touch command previews that expand on long hover
 
@@ -228,7 +228,24 @@
 - [x] Fix input border on hover/click moving other elements (outline?)
 - [x] Remove the `boards/` prefix from the library
 
+- [ ] Add icons/colors for tabs
+    - [ ] Pencil icon
+
+- [ ] Add debounce for download/double click to remove library (avoid adding right after removing)
+
+- [ ] Add menu with toggle overview for toml files in the .rustdyno/*.toml
+    - [ ] Clicking on the section brings the editor to that section
+
+- [ ] Study websites make a features `.md` file for nice features
+
+# Big
+
+- [ ] Implement security for checking commands and files
+    - [ ] List of verified commands in the main repo? 
+            - [ ] Otherwise have to trust or confirm?
+    - [ ] Implement security for commands have a confirm window on all non trusted cmds
+        - [ ] Add checkbox to trust a library
 
 # ?
 - [ ] integrate installer for board toolchains??
-
+- [ ] ? mcu markdown ?

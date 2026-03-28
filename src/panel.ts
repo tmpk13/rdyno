@@ -4,6 +4,37 @@ import * as fs from "fs";
 import { exec } from "child_process";
 import { autoSelectBoard, getActiveBoard, getActiveBoardFile, getEffectivePort, getLayout, getPortOverride, listBoards, PanelLayout, selectBoardByFile, setLayout, setPortOverride, setupBoardDir, ToolInstallConfig } from "./boardConfig";
 import { getBoardDir, getDefaultTargetFile, setDefaultBoardFile, setDefaultTargetFile, getProbeMap, setProbeMapping, clearProbeBoard, getPanelBg, setPanelBg, getCargoTargets, getTabConfig, setTabConfig, TabConfig } from "./projectConfig";
+import { getGlobalBoardsDir } from "./boardLibrary";
+
+interface TomlSection { name: string; line: number; }
+interface TomlFileOutline { filename: string; sections: TomlSection[]; }
+
+function parseTomlOutline(filePath: string): TomlSection[] {
+    if (!fs.existsSync(filePath)) { return []; }
+    const lines = fs.readFileSync(filePath, "utf-8").split("\n");
+    const sections: TomlSection[] = [];
+    for (let i = 0; i < lines.length; i++) {
+        const m = lines[i].match(/^\s*\[{1,2}([^\]]+)\]{1,2}\s*$/);
+        if (m) { sections.push({ name: m[1].trim(), line: i + 1 }); }
+    }
+    return sections;
+}
+
+function getTomlOutlines(): TomlFileOutline[] {
+    const dir = getBoardDir();
+    const boards = listBoards();
+    const result: TomlFileOutline[] = [];
+    for (const filename of boards) {
+        const wsPath = path.join(dir, filename);
+        const globalDir = getGlobalBoardsDir();
+        const globalPath = globalDir ? path.join(globalDir, filename) : undefined;
+        const filePath = fs.existsSync(wsPath) ? wsPath : (globalPath && fs.existsSync(globalPath) ? globalPath : undefined);
+        if (filePath) {
+            result.push({ filename, sections: parseTomlOutline(filePath) });
+        }
+    }
+    return result;
+}
 
 const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
     build: { label: "Build", color: "#1e7ec8" },
@@ -273,6 +304,25 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                     break;
                 }
 
+                // ── TOML Outline ──
+                case "openTomlSection": {
+                    const { filename, line } = msg.data as { filename: string; line: number };
+                    const dir = getBoardDir();
+                    const wsPath = path.join(dir, filename);
+                    const globalDir = getGlobalBoardsDir();
+                    const globalPath = globalDir ? path.join(globalDir, filename) : undefined;
+                    const filePath = fs.existsSync(wsPath) ? wsPath : (globalPath && fs.existsSync(globalPath) ? globalPath : undefined);
+                    if (filePath) {
+                        const uri = vscode.Uri.file(filePath);
+                        const pos = new vscode.Position(line - 1, 0);
+                        vscode.window.showTextDocument(uri, {
+                            selection: new vscode.Range(pos, pos),
+                            preview: false,
+                        });
+                    }
+                    break;
+                }
+
                 // ── Board Library ──
                 case "fetchLibrary": {
                     const repo = vscode.workspace.getConfiguration("rustdyno").get<string>("boardLibraryRepo", "");
@@ -527,6 +577,7 @@ export class BoardPanelProvider implements vscode.WebviewViewProvider {
                 checkEnabled: this._checkEnabled,
                 panelBg: getPanelBg() ?? null,
                 tabConfig: getTabConfig(),
+                tomlOutline: getTomlOutlines(),
             },
         });
     }

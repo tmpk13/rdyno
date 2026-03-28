@@ -1034,6 +1034,8 @@ function render(state) {
 
     document.getElementById('activeBoardLabel').textContent = `Active: ${activeName}`;
 
+    renderTomlOutline(state.tomlOutline || [], activeBoardFile);
+
     document.getElementById('portLabelEl').innerHTML = 'Port' + (portIsFromConfig
         ? ` <span style="opacity:0.6;font-style:italic">(from config: ${safeHtml(effectivePort)})</span>`
         : '');
@@ -1048,6 +1050,75 @@ function render(state) {
     // Re-filter examples if loaded and board changed
     if (_examplesLoaded && allExamples.length) {
         exFilterExamples(document.getElementById('exSearch').value);
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOML Outline
+// ══════════════════════════════════════════════════════════════
+const _tomlOutlineOpen = {};
+
+function renderTomlOutline(outlines, activeBoardFile) {
+    const container = document.getElementById('tomlOutline');
+    if (!container) { return; }
+    if (!outlines || !outlines.length) {
+        container.innerHTML = '';
+        return;
+    }
+
+    // Sort: active board first, then alphabetical
+    const sorted = [...outlines].sort((a, b) => {
+        if (a.filename === activeBoardFile) { return -1; }
+        if (b.filename === activeBoardFile) { return 1; }
+        return a.filename.localeCompare(b.filename);
+    });
+
+    container.innerHTML = '';
+    for (const file of sorted) {
+        const isActive = file.filename === activeBoardFile;
+        const key = file.filename;
+        if (_tomlOutlineOpen[key] === undefined) {
+            _tomlOutlineOpen[key] = isActive;
+        }
+        const isOpen = _tomlOutlineOpen[key];
+
+        const fileEl = document.createElement('div');
+        fileEl.className = 'toml-outline-file' + (isActive ? ' toml-outline-active' : '');
+
+        const header = document.createElement('div');
+        header.className = 'toml-outline-header';
+        header.onclick = () => {
+            _tomlOutlineOpen[key] = !_tomlOutlineOpen[key];
+            renderTomlOutline(outlines, activeBoardFile);
+        };
+
+        const arrow = document.createElement('span');
+        arrow.className = 'toml-outline-arrow' + (isOpen ? ' open' : '');
+        arrow.textContent = '\u25B6';
+
+        const label = document.createElement('span');
+        label.className = 'toml-outline-label';
+        label.textContent = file.filename.replace(/\.toml$/, '');
+
+        header.appendChild(arrow);
+        header.appendChild(label);
+        fileEl.appendChild(header);
+
+        if (isOpen && file.sections.length) {
+            const list = document.createElement('div');
+            list.className = 'toml-outline-sections';
+            for (const sec of file.sections) {
+                const item = document.createElement('div');
+                item.className = 'toml-outline-item';
+                item.textContent = '[' + sec.name + ']';
+                item.title = file.filename + ':' + sec.line;
+                item.onclick = () => send('openTomlSection', { filename: file.filename, line: sec.line });
+                list.appendChild(item);
+            }
+            fileEl.appendChild(list);
+        }
+
+        container.appendChild(fileEl);
     }
 }
 
@@ -1499,6 +1570,7 @@ const OPTIONAL_SECTIONS = {
         label: "[rtt]",
         fields: [
             { name: "enabled", type: "checkbox" },
+            { name: "command", type: "text", placeholder: "espflash monitor (optional)" },
         ],
         hasChannels: true,
     },
@@ -1506,6 +1578,44 @@ const OPTIONAL_SECTIONS = {
         label: "[run]",
         fields: [
             { name: "command", type: "text", placeholder: "espflash flash --monitor ..." },
+        ],
+    },
+    tool: {
+        label: "[tool]",
+        fields: [
+            { name: "name", type: "text", placeholder: "probe-rs" },
+            { name: "check", type: "text", placeholder: "probe-rs --version" },
+            { name: "install_linux", type: "text", placeholder: "Linux install command" },
+            { name: "install_mac", type: "text", placeholder: "macOS install command" },
+            { name: "install_win", type: "text", placeholder: "Windows install command" },
+            { name: "success_message", type: "text", placeholder: "Restart your terminal..." },
+        ],
+    },
+    actions: {
+        label: "[actions]",
+        fields: [
+            { name: "build_label", type: "text", placeholder: "Build" },
+            { name: "build_color", type: "text", placeholder: "#4caf50" },
+            { name: "flash_label", type: "text", placeholder: "Flash" },
+            { name: "flash_color", type: "text", placeholder: "#4caf50" },
+            { name: "rtt_label", type: "text", placeholder: "RTT Monitor" },
+            { name: "rtt_color", type: "text", placeholder: "#4caf50" },
+        ],
+    },
+    layout: {
+        label: "[layout]",
+        fields: [
+            { name: "order", type: "text", placeholder: "files, actions, rtt (comma-separated)" },
+            { name: "hidden", type: "text", placeholder: "rtt (comma-separated)" },
+        ],
+    },
+    new_project: {
+        label: "[new_project]",
+        fields: [
+            { name: "runner", type: "text", placeholder: "probe-rs run --chip ..." },
+            { name: "dependencies", type: "textarea", placeholder: 'cortex-m = "0.7.7"\npanic-halt = "1.0"' },
+            { name: "build-dependencies", type: "textarea", placeholder: 'embuild = "0.33"' },
+            { name: "generate", type: "text", placeholder: "cargo generate esp-rs/esp-idf-template cargo --name {{PROJECT_NAME}}" },
         ],
     },
 };
@@ -1612,6 +1722,14 @@ function bmBuildSectionDom(key, def) {
             inp.dataset.field = field.name;
             if (field.dataDefault) inp.dataset.default = field.dataDefault;
             row.appendChild(inp);
+        } else if (field.type === 'textarea') {
+            const ta = document.createElement('textarea');
+            ta.className = 'bm-input bm-textarea';
+            ta.placeholder = field.placeholder || '';
+            ta.dataset.section = key;
+            ta.dataset.field = field.name;
+            ta.rows = 3;
+            row.appendChild(ta);
         } else {
             const inp = document.createElement('input');
             inp.className = 'bm-input';
@@ -1832,7 +1950,7 @@ function bmFocusNext(current, direction) {
 
 function bmCollectData() {
     const data = {};
-    document.querySelectorAll('#tab-boardMaker .bm-input[data-section], #tab-boardMaker .bm-select[data-section], #tab-boardMaker .bm-check[data-section]').forEach(el => {
+    document.querySelectorAll('#tab-boardMaker .bm-input[data-section], #tab-boardMaker .bm-textarea[data-section], #tab-boardMaker .bm-select[data-section], #tab-boardMaker .bm-check[data-section]').forEach(el => {
         const section = el.dataset.section;
         const field = el.dataset.field;
         if (!section || !field) return;
@@ -1860,6 +1978,35 @@ function bmCollectData() {
             }
         });
     }
+    // Restructure tool.install_* into tool.install nested object
+    if (data.tool) {
+        const install = {};
+        if (data.tool.install_linux) { install.linux = data.tool.install_linux; delete data.tool.install_linux; }
+        if (data.tool.install_mac) { install.mac = data.tool.install_mac; delete data.tool.install_mac; }
+        if (data.tool.install_win) { install.win = data.tool.install_win; delete data.tool.install_win; }
+        if (Object.keys(install).length) data.tool.install = install;
+    }
+    // Restructure actions.build_label/color etc into actions.build.label/color
+    if (data.actions) {
+        const structured = {};
+        for (const key of ['build', 'flash', 'rtt']) {
+            const label = data.actions[key + '_label'];
+            const color = data.actions[key + '_color'];
+            if (label || color) {
+                structured[key] = {};
+                if (label) structured[key].label = label;
+                if (color) structured[key].color = color;
+            }
+        }
+        data.actions = Object.keys(structured).length ? structured : undefined;
+    }
+    // Parse layout comma-separated strings into arrays
+    if (data.layout) {
+        if (data.layout.order) data.layout.order = data.layout.order.split(',').map(s => s.trim()).filter(Boolean);
+        else data.layout.order = [];
+        if (data.layout.hidden) data.layout.hidden = data.layout.hidden.split(',').map(s => s.trim()).filter(Boolean);
+        else data.layout.hidden = [];
+    }
     return data;
 }
 
@@ -1870,6 +2017,19 @@ function bmGenerateToml(data) {
         if (data.board.name) toml += `name   = ${bmQ(data.board.name)}\n`;
         if (data.board.chip) toml += `chip   = ${bmQ(data.board.chip)}\n`;
         if (data.board.target) toml += `target = ${bmQ(data.board.target)}\n`;
+        if (data.board.elf) toml += `elf    = ${bmQ(data.board.elf)}\n`;
+    }
+    if (data.tool && Object.keys(data.tool).length) {
+        toml += '\n[tool]\n';
+        if (data.tool.name) toml += `name  = ${bmQ(data.tool.name)}\n`;
+        if (data.tool.check) toml += `check = ${bmQ(data.tool.check)}\n`;
+        if (data.tool.success_message) toml += `success_message = ${bmQ(data.tool.success_message)}\n`;
+        if (data.tool.install) {
+            toml += '\n[tool.install]\n';
+            if (data.tool.install.linux) toml += `linux = ${bmQ(data.tool.install.linux)}\n`;
+            if (data.tool.install.mac) toml += `mac   = ${bmQ(data.tool.install.mac)}\n`;
+            if (data.tool.install.win) toml += `win   = ${bmQ(data.tool.install.win)}\n`;
+        }
     }
     if (data.probe && Object.keys(data.probe).length) {
         toml += '\n[probe]\n';
@@ -1885,6 +2045,7 @@ function bmGenerateToml(data) {
     if (data.rtt) {
         toml += '\n[rtt]\n';
         toml += `enabled = ${data.rtt.enabled === true}\n`;
+        if (data.rtt.command) toml += `command = ${bmQ(data.rtt.command)}\n`;
         if (data.rtt.channels && data.rtt.channels.length > 0) {
             toml += 'channels = [' +
                 data.rtt.channels.map(c => `{ up = ${c.up}, name = ${bmQ(c.name)} }`).join(', ') +
@@ -1894,6 +2055,25 @@ function bmGenerateToml(data) {
     if (data.run && data.run.command) {
         toml += '\n[run]\n';
         toml += `command = ${bmQ(data.run.command)}\n`;
+    }
+    if (data.actions && Object.keys(data.actions).length) {
+        for (const [key, cfg] of Object.entries(data.actions)) {
+            toml += `\n[actions.${key}]\n`;
+            if (cfg.label) toml += `label = ${bmQ(cfg.label)}\n`;
+            if (cfg.color) toml += `color = ${bmQ(cfg.color)}\n`;
+        }
+    }
+    if (data.layout) {
+        toml += '\n[layout]\n';
+        if (data.layout.order && data.layout.order.length) toml += `order  = [${data.layout.order.map(s => bmQ(s)).join(', ')}]\n`;
+        if (data.layout.hidden && data.layout.hidden.length) toml += `hidden = [${data.layout.hidden.map(s => bmQ(s)).join(', ')}]\n`;
+    }
+    if (data.new_project) {
+        toml += '\n[new_project]\n';
+        if (data.new_project.runner) toml += `runner = ${bmQ(data.new_project.runner)}\n`;
+        if (data.new_project.generate) toml += `generate = ${bmQ(data.new_project.generate)}\n`;
+        if (data.new_project.dependencies) toml += `\ndependencies = '''\n${data.new_project.dependencies}\n'''\n`;
+        if (data.new_project['build-dependencies']) toml += `\n"build-dependencies" = '''\n${data.new_project['build-dependencies']}\n'''\n`;
     }
     return toml;
 }
@@ -1990,6 +2170,7 @@ function bmPopulateForm(data) {
         bmSetField('board', 'name', data.board.name);
         bmSetField('board', 'chip', data.board.chip);
         bmSetField('board', 'target', data.board.target);
+        bmSetField('board', 'elf', data.board.elf);
     }
     if (data.probe) {
         bmAddSection('probe');
@@ -2005,6 +2186,7 @@ function bmPopulateForm(data) {
     if (data.rtt) {
         bmAddSection('rtt');
         bmSetCheck('rtt', 'enabled', data.rtt.enabled);
+        bmSetField('rtt', 'command', data.rtt.command);
         if (data.rtt.channels) {
             const container = document.querySelector('#tab-boardMaker .bm-rtt-channels');
             data.rtt.channels.forEach(ch => {
@@ -2019,6 +2201,40 @@ function bmPopulateForm(data) {
     if (data.run) {
         bmAddSection('run');
         bmSetField('run', 'command', data.run.command);
+    }
+    if (data.tool) {
+        bmAddSection('tool');
+        bmSetField('tool', 'name', data.tool.name);
+        bmSetField('tool', 'check', data.tool.check);
+        bmSetField('tool', 'success_message', data.tool.success_message);
+        if (data.tool.install) {
+            bmSetField('tool', 'install_linux', data.tool.install.linux);
+            bmSetField('tool', 'install_mac', data.tool.install.mac);
+            bmSetField('tool', 'install_win', data.tool.install.win);
+        }
+    }
+    if (data.actions) {
+        bmAddSection('actions');
+        for (const key of ['build', 'flash', 'rtt']) {
+            if (data.actions[key]) {
+                bmSetField('actions', key + '_label', data.actions[key].label);
+                bmSetField('actions', key + '_color', data.actions[key].color);
+            }
+        }
+    }
+    if (data.layout) {
+        bmAddSection('layout');
+        if (data.layout.order) bmSetField('layout', 'order', Array.isArray(data.layout.order) ? data.layout.order.join(', ') : data.layout.order);
+        if (data.layout.hidden) bmSetField('layout', 'hidden', Array.isArray(data.layout.hidden) ? data.layout.hidden.join(', ') : data.layout.hidden);
+    }
+    if (data.new_project) {
+        bmAddSection('new_project');
+        bmSetField('new_project', 'runner', data.new_project.runner);
+        bmSetField('new_project', 'dependencies', data.new_project.dependencies);
+        bmSetField('new_project', 'build-dependencies', data.new_project['build-dependencies']);
+        if (typeof data.new_project.generate === 'string') {
+            bmSetField('new_project', 'generate', data.new_project.generate);
+        }
     }
 }
 

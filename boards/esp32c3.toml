@@ -47,13 +47,6 @@ embuild = "0.33"
 '''
 
 [[new_project.files]]
-path              = "rustdyno.toml"
-replace_if_exists = true
-content = '''
-default="esp32c3.toml"
-'''
-
-[[new_project.files]]
 path    = "src/main.rs"
 content = '''
 use anyhow::Result;
@@ -71,6 +64,10 @@ fn main() -> Result<()> {
 }
 '''
 
+# === === === === === === === === ===
+#   build.rs --> Link build files
+# === === === === === === === === ===
+
 [[new_project.files]]
 path    = "build.rs"
 content = '''
@@ -78,6 +75,10 @@ fn main() {
     embuild::espidf::sysenv::output();
 }
 '''
+
+# === === === === === === === === ===
+#   rust-toolchain.toml 
+# === === === === === === === === ===
 
 [[new_project.files]]
 path              = "rust-toolchain.toml"
@@ -87,6 +88,10 @@ content = '''
 channel    = "nightly"
 components = ["rust-src"]
 '''
+
+# === === === === === === === === ===
+#   sdkconfig.defaults
+# === === === === === === === === ===
 
 [[new_project.files]]
 path    = "sdkconfig.defaults"
@@ -102,6 +107,10 @@ CONFIG_FREERTOS_IDLE_TASK_STACKSIZE=4096
 # or use std::thread::Builder::new().stack_size(XXX) instead
 CONFIG_PTHREAD_TASK_STACK_SIZE_DEFAULT=4096
 '''
+
+# === === === === === === === === ===
+#   .cargo/config.toml
+# === === === === === === === === ===
 
 [[new_project.files]]
 path              = ".cargo/config.toml"
