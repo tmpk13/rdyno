@@ -1056,69 +1056,51 @@ function render(state) {
 // ══════════════════════════════════════════════════════════════
 // TOML Outline
 // ══════════════════════════════════════════════════════════════
-const _tomlOutlineOpen = {};
+let _tomlOutlineVisible = false;
 
 function renderTomlOutline(outlines, activeBoardFile) {
     const container = document.getElementById('tomlOutline');
     if (!container) { return; }
-    if (!outlines || !outlines.length) {
+
+    const file = (outlines || []).find(f => f.filename === activeBoardFile);
+    if (!file || !file.sections.length) {
         container.innerHTML = '';
         return;
     }
 
-    // Sort: active board first, then alphabetical
-    const sorted = [...outlines].sort((a, b) => {
-        if (a.filename === activeBoardFile) { return -1; }
-        if (b.filename === activeBoardFile) { return 1; }
-        return a.filename.localeCompare(b.filename);
-    });
-
     container.innerHTML = '';
-    for (const file of sorted) {
-        const isActive = file.filename === activeBoardFile;
-        const key = file.filename;
-        if (_tomlOutlineOpen[key] === undefined) {
-            _tomlOutlineOpen[key] = isActive;
+
+    const header = document.createElement('div');
+    header.className = 'toml-outline-header';
+    header.onclick = () => {
+        _tomlOutlineVisible = !_tomlOutlineVisible;
+        renderTomlOutline(outlines, activeBoardFile);
+    };
+
+    const arrow = document.createElement('span');
+    arrow.className = 'toml-outline-arrow' + (_tomlOutlineVisible ? ' open' : '');
+    arrow.textContent = '\u25B6';
+
+    const label = document.createElement('span');
+    label.className = 'toml-outline-label';
+    label.textContent = file.filename.replace(/\.toml$/, '');
+
+    header.appendChild(arrow);
+    header.appendChild(label);
+    container.appendChild(header);
+
+    if (_tomlOutlineVisible) {
+        const list = document.createElement('div');
+        list.className = 'toml-outline-sections';
+        for (const sec of file.sections) {
+            const item = document.createElement('div');
+            item.className = 'toml-outline-item';
+            item.textContent = '[' + sec.name + ']';
+            item.title = file.filename + ':' + sec.line;
+            item.onclick = () => send('openTomlSection', { filename: file.filename, line: sec.line });
+            list.appendChild(item);
         }
-        const isOpen = _tomlOutlineOpen[key];
-
-        const fileEl = document.createElement('div');
-        fileEl.className = 'toml-outline-file' + (isActive ? ' toml-outline-active' : '');
-
-        const header = document.createElement('div');
-        header.className = 'toml-outline-header';
-        header.onclick = () => {
-            _tomlOutlineOpen[key] = !_tomlOutlineOpen[key];
-            renderTomlOutline(outlines, activeBoardFile);
-        };
-
-        const arrow = document.createElement('span');
-        arrow.className = 'toml-outline-arrow' + (isOpen ? ' open' : '');
-        arrow.textContent = '\u25B6';
-
-        const label = document.createElement('span');
-        label.className = 'toml-outline-label';
-        label.textContent = file.filename.replace(/\.toml$/, '');
-
-        header.appendChild(arrow);
-        header.appendChild(label);
-        fileEl.appendChild(header);
-
-        if (isOpen && file.sections.length) {
-            const list = document.createElement('div');
-            list.className = 'toml-outline-sections';
-            for (const sec of file.sections) {
-                const item = document.createElement('div');
-                item.className = 'toml-outline-item';
-                item.textContent = '[' + sec.name + ']';
-                item.title = file.filename + ':' + sec.line;
-                item.onclick = () => send('openTomlSection', { filename: file.filename, line: sec.line });
-                list.appendChild(item);
-            }
-            fileEl.appendChild(list);
-        }
-
-        container.appendChild(fileEl);
+        container.appendChild(list);
     }
 }
 

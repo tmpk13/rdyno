@@ -594,12 +594,6 @@ button:hover {
 #tomlOutline {
     margin: 0.35rem 0 0.25rem;
 }
-.toml-outline-file {
-    margin-bottom: 2px;
-}
-.toml-outline-active > .toml-outline-header {
-    font-weight: 600;
-}
 .toml-outline-header {
     display: flex;
     align-items: center;

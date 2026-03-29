@@ -238,7 +238,16 @@
 
 - [ ] Study websites make a features `.md` file for nice features
 
+- [ ] When build is clicked run glows for 3 seconds or until pressed
+    - [ ] Same for monitor
+
+
+- [ ] User stories
+
+
 # Big
+
+- [ ] Feature search - brings you to correct place in menu
 
 - [ ] Implement security for checking commands and files
     - [ ] List of verified commands in the main repo? 

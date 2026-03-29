@@ -21,19 +21,15 @@ function parseTomlOutline(filePath: string): TomlSection[] {
 }
 
 function getTomlOutlines(): TomlFileOutline[] {
+    const filename = getActiveBoardFile();
+    if (!filename) { return []; }
     const dir = getBoardDir();
-    const boards = listBoards();
-    const result: TomlFileOutline[] = [];
-    for (const filename of boards) {
-        const wsPath = path.join(dir, filename);
-        const globalDir = getGlobalBoardsDir();
-        const globalPath = globalDir ? path.join(globalDir, filename) : undefined;
-        const filePath = fs.existsSync(wsPath) ? wsPath : (globalPath && fs.existsSync(globalPath) ? globalPath : undefined);
-        if (filePath) {
-            result.push({ filename, sections: parseTomlOutline(filePath) });
-        }
-    }
-    return result;
+    const wsPath = path.join(dir, filename);
+    const globalDir = getGlobalBoardsDir();
+    const globalPath = globalDir ? path.join(globalDir, filename) : undefined;
+    const filePath = fs.existsSync(wsPath) ? wsPath : (globalPath && fs.existsSync(globalPath) ? globalPath : undefined);
+    if (!filePath) { return []; }
+    return [{ filename, sections: parseTomlOutline(filePath) }];
 }
 
 const DEFAULT_ACTIONS: Record<string, { label: string; color: string }> = {
