@@ -109,42 +109,7 @@
 .tab-btn.active {
     opacity: 1;
     border-bottom-color: var(--rd-focus);
-}
-
-.tab-overflow-btn {
-    padding: 0.4rem 0.5rem;
-    background: none;
-    border: none;
-    border-radius: 0;
-    color: var(--rd-fg);
-    cursor: pointer;
-    font-size: 1rem;
-    opacity: 0.6;
-    flex-shrink: 0;
-    min-height: unset;
-    width: auto;
-}
-
-.overflow-label {
-    display: none;
-}
-
-.vertical-tabs .tab-overflow-btn {
     flex: 1;
-    text-align: left;
-    font-size: var(--rd-font-size);
-    opacity: 1;
-    border-bottom: 2px solid var(--rd-focus);
-}
-
-.vertical-tabs .overflow-label {
-    display: inline;
-}
-
-.tab-overflow-btn:hover {
-    opacity: 0.85;
-    background: var(--rd-toolbar-hover);
-    outline: none !important;
 }
 
 #overflowTray {
@@ -172,12 +137,6 @@
 .overflow-tab {
     opacity: 0.7;
     text-align: left;
-}
-
-
-/* ── Vertical Tabs ── */
-#tabBar.vertical-tabs .tab-btn.tab-overflowed {
-    display: none;
 }
 
 /* ── Tab Content ── */

@@ -114,12 +114,10 @@ function showDynamicTab(panelId) {
 // ══════════════════════════════════════════════════════════════
 // Tab layout config (defaults — overridden by rustdyno.toml)
 // ══════════════════════════════════════════════════════════════
-let _tabVertical = true;
 let _tabAutoCollapseSec = 5;
 
 function applyTabConfig(cfg) {
     if (!cfg) return;
-    if (typeof cfg.vertical === 'boolean') _tabVertical = cfg.vertical;
     if (typeof cfg.auto_collapse_seconds === 'number') _tabAutoCollapseSec = cfg.auto_collapse_seconds;
     recalcTabs();
 }
@@ -135,110 +133,28 @@ function recalcTabs() {
 }
 
 function _recalcTabsImpl() {
-    const tabBar = document.getElementById('tabBar');
     const tabRow = document.getElementById('tabRow');
-    const overflowBtn = document.querySelector('.tab-overflow-btn');
     const overflowDynamic = document.getElementById('overflowDynamic');
 
-    if (_tabVertical) {
-        // Vertical mode — merge active tab label into the overflow button
-        tabBar.classList.add('vertical-tabs');
-        overflowDynamic.innerHTML = '';
-        const allVTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))
-            .filter(b => b.style.display !== 'none');
-        let activeLabel = '';
-        allVTabs.forEach(b => {
-            if (b.classList.contains('active')) {
-                activeLabel = b.textContent;
-            }
-            // Hide all tab buttons — the overflow button shows the active name
-            b.classList.add('tab-overflowed');
-            if (!b.classList.contains('active')) {
-                const clone = document.createElement('button');
-                clone.className = 'tab-btn overflow-tab';
-                clone.textContent = b.textContent;
-                const tabId = b.dataset.tab;
-                clone.addEventListener('click', () => {
-                    if (tabId === 'dynamic') showDynamicTab(currentDynamic || 'newProject');
-                    else switchTab(tabId);
-                });
-                overflowDynamic.appendChild(clone);
-            }
-        });
-        overflowBtn.querySelector('.overflow-label').textContent = activeLabel;
-        overflowBtn.style.display = '';
-        return;
-    }
-
-    // Horizontal mode (opt-in via config)
-    tabBar.classList.remove('vertical-tabs');
-    overflowBtn.querySelector('.overflow-label').textContent = '';
-
-    // Reset all tabs to visible for measurement
+    overflowDynamic.innerHTML = '';
     const allTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))
         .filter(b => b.style.display !== 'none');
-    allTabs.forEach(b => b.classList.remove('tab-overflowed'));
-    overflowDynamic.innerHTML = '';
-
-    const availableWidth = tabRow.clientWidth;
-    const btnWidth = overflowBtn.offsetWidth;
-
-    let usedWidth = 0;
-    let overflowStartIdx = -1;
-
-    allTabs.forEach(b => b.style.flexShrink = '0');
-    for (let i = 0; i < allTabs.length; i++) {
-        usedWidth += allTabs[i].offsetWidth;
-        if (usedWidth > availableWidth - btnWidth) {
-            overflowStartIdx = i;
-            break;
+    allTabs.forEach(b => {
+        if (b.classList.contains('active')) {
+            b.classList.remove('tab-overflowed');
+        } else {
+            b.classList.add('tab-overflowed');
+            const clone = document.createElement('button');
+            clone.className = 'tab-btn overflow-tab';
+            clone.textContent = b.textContent;
+            const tabId = b.dataset.tab;
+            clone.addEventListener('click', () => {
+                if (tabId === 'dynamic') showDynamicTab(currentDynamic || 'newProject');
+                else switchTab(tabId);
+            });
+            overflowDynamic.appendChild(clone);
         }
-    }
-    allTabs.forEach(b => b.style.flexShrink = '');
-
-    if (overflowStartIdx === -1) {
-        overflowBtn.style.display = '';
-        return;
-    }
-
-    overflowBtn.style.display = '';
-
-    const activeIdx = allTabs.findIndex(b => b.classList.contains('active'));
-    if (activeIdx >= overflowStartIdx) {
-        const lastVisibleIdx = overflowStartIdx - 1;
-        if (lastVisibleIdx >= 0) {
-            const activeTab = allTabs[activeIdx];
-            const lastVisible = allTabs[lastVisibleIdx];
-            tabRow.insertBefore(activeTab, lastVisible);
-            allTabs.splice(activeIdx, 1);
-            allTabs.splice(lastVisibleIdx, 0, activeTab);
-        }
-    }
-
-    usedWidth = 0;
-    overflowStartIdx = -1;
-    allTabs.forEach(b => b.style.flexShrink = '0');
-    for (let i = 0; i < allTabs.length; i++) {
-        usedWidth += allTabs[i].offsetWidth;
-        if (usedWidth > availableWidth - btnWidth) {
-            overflowStartIdx = i;
-            break;
-        }
-    }
-    allTabs.forEach(b => b.style.flexShrink = '');
-
-    if (overflowStartIdx === -1) return;
-
-    for (let i = overflowStartIdx; i < allTabs.length; i++) {
-        allTabs[i].classList.add('tab-overflowed');
-        const clone = document.createElement('button');
-        clone.className = 'tab-btn overflow-tab';
-        clone.textContent = allTabs[i].textContent;
-        const tabId = allTabs[i].dataset.tab;
-        clone.addEventListener('click', () => switchTab(tabId));
-        if (allTabs[i].classList.contains('active')) clone.classList.add('active');
-        overflowDynamic.appendChild(clone);
-    }
+    });
 }
 
 let _overflowTimer = null;

@@ -7,7 +7,7 @@
 
 <body>
   <!-- ═══ Tab Bar ═══ -->
-  <div id="tabBar" class="vertical-tabs">
+  <div id="tabBar">
     <div id="tabRowWrap">
       <div id="tabRow">
         <button class="tab-btn active" data-tab="controls" onclick="switchTab('controls')">Controls</button>
@@ -15,7 +15,6 @@
         <button class="tab-btn" data-tab="examples" onclick="switchTab('examples')">Examples</button>
         <button class="tab-btn tab-dynamic" data-tab="dynamic" style="display:none" onclick="switchTab('dynamic')"></button>
       </div>
-      <button class="tab-overflow-btn" onclick="toggleOverflow(event)"><span class="overflow-label"></span> &#x2026;</button>
     </div>
     <div id="overflowTray">
       <div id="overflowDynamic"></div>
