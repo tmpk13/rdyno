@@ -10,17 +10,11 @@
   <div id="tabBar">
     <div id="tabRowWrap">
       <div id="tabRow">
-        <button class="tab-btn active" data-tab="controls" onclick="switchTab('controls')">Controls</button>
-        <button class="tab-btn" data-tab="library" onclick="switchTab('library')">Library</button>
-        <button class="tab-btn" data-tab="examples" onclick="switchTab('examples')">Examples</button>
-        <button class="tab-btn tab-dynamic" data-tab="dynamic" style="display:none" onclick="switchTab('dynamic')"></button>
-      </div>
-    </div>
-    <div id="overflowTray">
-      <div id="overflowDynamic"></div>
-      <div id="overflowStatic">
-        <button class="tab-btn overflow-tab" onclick="showDynamicTab('newProject')">New Project</button>
-        <button class="tab-btn overflow-tab" onclick="showDynamicTab('boardMaker')">Board Maker</button>
+        <button class="tab-btn active" data-tab="controls" onclick="switchTab('controls')" title="Board controls &amp; configuration">Controls</button>
+        <button class="tab-btn" data-tab="library" onclick="switchTab('library')" title="Browse &amp; download board configs">Library</button>
+        <button class="tab-btn" data-tab="examples" onclick="switchTab('examples')" title="Browse code examples">Examples</button>
+        <button class="tab-btn" data-tab="newProject" onclick="switchTab('newProject')" title="Scaffold a new embedded project">New Project</button>
+        <button class="tab-btn" data-tab="boardMaker" onclick="switchTab('boardMaker')" title="Create a new board config file">Board Maker</button>
       </div>
     </div>
   </div>

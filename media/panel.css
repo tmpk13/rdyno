@@ -12,7 +12,7 @@
 
     /* Core colors */
     --rd-fg:           var(--vscode-foreground);
-    --rd-focus:        #55F;
+    --rd-focus:        rgba(82, 220, 133, 0.833);
     --rd-error-fg:     var(--vscode-errorForeground);
     --rd-error-border: var(--vscode-inputValidation-errorBorder, #f44747);
 
@@ -64,16 +64,31 @@
 
 #tabRowWrap {
     display: flex;
-    align-items: center;
     overflow: hidden;
 }
 
 #tabRow {
     display: flex;
-    align-items: center;
-    overflow: hidden;
+    flex-direction: column;
+    align-items: stretch;
     flex: 1;
     gap: 0;
+}
+
+#tabRow .tab-btn:not(.active) {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom-width: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease, padding 0.2s ease, border-bottom-width 0.2s ease;
+}
+
+#tabBar.expanded #tabRow .tab-btn:not(.active) {
+    max-height: 3rem;
+    padding: 0.4rem 0.6rem;
+    border-bottom-width: 2px;
+    overflow: visible;
 }
 
 .tab-btn {
@@ -87,17 +102,25 @@
     cursor: pointer;
     font-size: var(--rd-font-size);
     white-space: nowrap;
-    flex-shrink: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 2.5rem;
+    overflow: visible;
     min-height: unset;
-    width: auto;
+    width: 100%;
     margin: 0;
+    position: relative;
+    text-align: left;
 }
 
-.tab-btn.tab-overflowed {
-    display: none;
+.tab-hover-bar {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: var(--rd-focus);
+    border-radius: 1px;
+    pointer-events: none;
+    opacity: 1;
 }
 
 .tab-btn:hover {
@@ -109,34 +132,6 @@
 .tab-btn.active {
     opacity: 1;
     border-bottom-color: var(--rd-focus);
-    flex: 1;
-}
-
-#overflowTray {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.15s ease, border-top-width 0.15s ease;
-    border-top: 0px solid var(--rd-drop-border);
-    gap: 0;
-}
-
-#overflowTray.open {
-    max-height: 12rem;
-    border-top: 1px solid var(--rd-drop-border);
-}
-
-#overflowDynamic,
-#overflowStatic {
-    display: flex;
-    flex-direction: column;
-}
-
-.overflow-tab {
-    opacity: 0.7;
-    text-align: left;
 }
 
 /* ── Tab Content ── */
@@ -280,7 +275,7 @@ body {
 
 /* Large primary action button (e.g. Run) */
 .action-button {
-    min-height: 5rem;
+    min-height: 3.5rem;
     display: flex;
     justify-content: space-between;
 }
@@ -470,15 +465,15 @@ body {
 #libSearch:hover,
 #np-search:hover,
 #exSearch:hover {
-    border-color: rgba(255, 255, 255, 0.75) !important;
-    outline: 1px solid rgba(255, 255, 255, 0.75);
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    outline: 3px solid rgba(255, 255, 255, 0.25);
     outline-offset: -1px;
 }
 
 #libSearch:focus,
 #np-search:focus,
 #exSearch:focus {
-    outline: 3px solid var(--rd-focus) !important;
+    outline: 3px solid rgba(255, 255, 255, 0.25) !important;
     outline-offset: -1px;
     border-color: transparent !important;
 }

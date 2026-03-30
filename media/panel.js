@@ -64,26 +64,18 @@ function spinRefresh(id) {
 // ══════════════════════════════════════════════════════════════
 // Tab switching
 // ══════════════════════════════════════════════════════════════
-let currentDynamic = null;
 let _examplesLoaded = false;
 let _libLoaded = false;
 
 function switchTab(tabId) {
-    const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-    if (btn && btn.classList.contains('active') && !document.getElementById('overflowTray').classList.contains('open')) {
-        toggleOverflow();
-        return;
-    }
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
     if (btn) btn.classList.add('active');
 
-    if (tabId === 'dynamic' && currentDynamic) {
-        document.getElementById('tab-' + currentDynamic).classList.add('active');
-    } else {
-        const panel = document.getElementById('tab-' + tabId);
-        if (panel) panel.classList.add('active');
-    }
+    const panel = document.getElementById('tab-' + tabId);
+    if (panel) panel.classList.add('active');
 
     // Lazy-load data on first visit
     if (tabId === 'examples' && !_examplesLoaded) {
@@ -94,100 +86,10 @@ function switchTab(tabId) {
         _libLoaded = true;
         libLoad();
     }
-
-    closeOverflow();
-    recalcTabs();
-}
-
-function showDynamicTab(panelId) {
-    currentDynamic = panelId;
-    const dynBtn = document.querySelector('.tab-dynamic');
-    dynBtn.style.display = '';
-    dynBtn.textContent = panelId === 'newProject' ? 'New Project' : 'Board Maker';
-    switchTab('dynamic');
-
-    if (panelId === 'newProject') {
+    if (tabId === 'newProject') {
         send('npRefreshBoards');
     }
 }
-
-// ══════════════════════════════════════════════════════════════
-// Tab layout config (defaults — overridden by rustdyno.toml)
-// ══════════════════════════════════════════════════════════════
-let _tabAutoCollapseSec = 5;
-
-function applyTabConfig(cfg) {
-    if (!cfg) return;
-    if (typeof cfg.auto_collapse_seconds === 'number') _tabAutoCollapseSec = cfg.auto_collapse_seconds;
-    recalcTabs();
-}
-
-// ══════════════════════════════════════════════════════════════
-// Responsive tab overflow / vertical layout
-// ══════════════════════════════════════════════════════════════
-let _recalcRAF = null;
-
-function recalcTabs() {
-    if (_recalcRAF) cancelAnimationFrame(_recalcRAF);
-    _recalcRAF = requestAnimationFrame(_recalcTabsImpl);
-}
-
-function _recalcTabsImpl() {
-    const tabRow = document.getElementById('tabRow');
-    const overflowDynamic = document.getElementById('overflowDynamic');
-
-    overflowDynamic.innerHTML = '';
-    const allTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))
-        .filter(b => b.style.display !== 'none');
-    allTabs.forEach(b => {
-        if (b.classList.contains('active')) {
-            b.classList.remove('tab-overflowed');
-        } else {
-            b.classList.add('tab-overflowed');
-            const clone = document.createElement('button');
-            clone.className = 'tab-btn overflow-tab';
-            clone.textContent = b.textContent;
-            const tabId = b.dataset.tab;
-            clone.addEventListener('click', () => {
-                if (tabId === 'dynamic') showDynamicTab(currentDynamic || 'newProject');
-                else switchTab(tabId);
-            });
-            overflowDynamic.appendChild(clone);
-        }
-    });
-}
-
-let _overflowTimer = null;
-
-function toggleOverflow(e) {
-    if (e) e.stopPropagation();
-    const tray = document.getElementById('overflowTray');
-    tray.classList.toggle('open');
-    clearTimeout(_overflowTimer);
-}
-
-function closeOverflow() {
-    clearTimeout(_overflowTimer);
-    document.getElementById('overflowTray').classList.remove('open');
-}
-
-function _startOverflowTimer() {
-    clearTimeout(_overflowTimer);
-    if (_tabAutoCollapseSec > 0) {
-        _overflowTimer = setTimeout(closeOverflow, _tabAutoCollapseSec * 1000);
-    }
-}
-
-document.getElementById('tabBar').addEventListener('mouseenter', () => clearTimeout(_overflowTimer));
-document.getElementById('tabBar').addEventListener('mouseleave', () => {
-    if (document.getElementById('overflowTray').classList.contains('open')) {
-        _startOverflowTimer();
-    }
-});
-
-// Observe panel resizes and recalculate tab overflow
-new ResizeObserver(() => recalcTabs()).observe(document.getElementById('tabBar'));
-recalcTabs();
 
 // ══════════════════════════════════════════════════════════════
 // Board Controls
@@ -857,7 +759,7 @@ function makeActionBtn(cmd, actionCfg, uris, cmdPreviews) {
 function render(state) {
     STATE = state;
     const { files, hiddenFiles, binTargets, pickedFile, boards, activeBoardFile, activeName,
-        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions, tool, panelBg, tabConfig } = state;
+        effectivePort, portIsFromConfig, portOverride, cmdPreviews, uris, layout, actions, tool, panelBg } = state;
     const _binTargets = binTargets || [];
 
     _tomlLayout = layout;
@@ -872,7 +774,6 @@ function render(state) {
         }
         applyLayout();
         if (panelBg) { applyPanelBg(panelBg); }
-        applyTabConfig(tabConfig);
     }
 
     // Compute labels across all files (visible + hidden) for consistent deterministic naming

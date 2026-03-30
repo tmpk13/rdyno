@@ -133,11 +133,91 @@ const Anim = (() => {
         });
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initTitleTooltips);
-    } else {
-        initTitleTooltips();
+    // ── Tab hover bar ────────────────────────────────────────────
+    // Injects a 2 px bar at the bottom of each .tab-btn.
+    // mouseenter  → snappy grow 5 % → 25 %
+    // mouseleave  → sweep 25 % → 100 %, then vanish
+
+    function initTabHoverBars() {
+        function setupBar(btn) {
+            if (btn.querySelector('.tab-hover-bar')) { return; }
+            const bar = document.createElement('span');
+            bar.className = 'tab-hover-bar';
+            btn.appendChild(bar);
+
+            let activeAnim = null;
+
+            btn.addEventListener('mouseenter', () => {
+                if (btn.classList.contains('active')) { return; }
+                if (activeAnim) { activeAnim.cancel(); activeAnim = null; }
+                bar.style.opacity = '1';
+                activeAnim = bar.animate(
+                    [{ width: '5%' }, { width: '25%' }],
+                    { duration: SNAP_MS, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+                );
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                if (btn.classList.contains('active')) { return; }
+                if (activeAnim) { activeAnim.cancel(); activeAnim = null; }
+                activeAnim = bar.animate(
+                    [{ width: '25%', opacity: 1 }, { width: '100%', opacity: 0 }],
+                    { duration: Math.round(EXPAND_MS * 1.5), easing: 'ease-out', fill: 'forwards' }
+                );
+                activeAnim.onfinish = () => {
+                    bar.getAnimations().forEach(a => a.cancel());
+                    bar.style.width  = '0';
+                    bar.style.opacity = '1';
+                    activeAnim = null;
+                };
+            });
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(setupBar);
+        return setupBar;
     }
 
-    return { getTip, positionTip, tooltipIn, tooltipOut };
+    // ── Tab collapse / expand ─────────────────────────────────
+    // Shows all tabs on hover; collapses to active-only after 10s idle.
+
+    const COLLAPSE_MS = 10000;
+
+    function initTabCollapse() {
+        const tabBar = document.getElementById('tabBar');
+        if (!tabBar) { return; }
+        let collapseTimer = null;
+
+        function expand() {
+            tabBar.classList.add('expanded');
+            clearTimeout(collapseTimer);
+        }
+
+        function scheduleCollapse() {
+            clearTimeout(collapseTimer);
+            collapseTimer = setTimeout(() => {
+                tabBar.classList.remove('expanded');
+            }, COLLAPSE_MS);
+        }
+
+        tabBar.addEventListener('mouseenter', expand);
+        tabBar.addEventListener('mouseleave', scheduleCollapse);
+
+        // Start expanded, then schedule first collapse
+        expand();
+        scheduleCollapse();
+    }
+
+    function init() {
+        initTitleTooltips();
+        initTabHoverBars();
+        initTabCollapse();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    return { getTip, positionTip, tooltipIn, tooltipOut, initTabHoverBars };
 })();
