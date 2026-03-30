@@ -141,16 +141,19 @@ function _recalcTabsImpl() {
     const overflowDynamic = document.getElementById('overflowDynamic');
 
     if (_tabVertical) {
-        // Vertical mode — show only the active tab + "..." button
+        // Vertical mode — merge active tab label into the overflow button
         tabBar.classList.add('vertical-tabs');
         overflowDynamic.innerHTML = '';
         const allVTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))
             .filter(b => b.style.display !== 'none');
+        let activeLabel = '';
         allVTabs.forEach(b => {
             if (b.classList.contains('active')) {
-                b.classList.remove('tab-overflowed');
-            } else {
-                b.classList.add('tab-overflowed');
+                activeLabel = b.textContent;
+            }
+            // Hide all tab buttons — the overflow button shows the active name
+            b.classList.add('tab-overflowed');
+            if (!b.classList.contains('active')) {
                 const clone = document.createElement('button');
                 clone.className = 'tab-btn overflow-tab';
                 clone.textContent = b.textContent;
@@ -162,12 +165,14 @@ function _recalcTabsImpl() {
                 overflowDynamic.appendChild(clone);
             }
         });
+        overflowBtn.querySelector('.overflow-label').textContent = activeLabel;
         overflowBtn.style.display = '';
         return;
     }
 
     // Horizontal mode (opt-in via config)
     tabBar.classList.remove('vertical-tabs');
+    overflowBtn.querySelector('.overflow-label').textContent = '';
 
     // Reset all tabs to visible for measurement
     const allTabs = Array.from(tabRow.querySelectorAll('.tab-btn'))

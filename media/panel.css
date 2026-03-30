@@ -125,6 +125,22 @@
     width: auto;
 }
 
+.overflow-label {
+    display: none;
+}
+
+.vertical-tabs .tab-overflow-btn {
+    flex: 1;
+    text-align: left;
+    font-size: var(--rd-font-size);
+    opacity: 1;
+    border-bottom: 2px solid var(--rd-focus);
+}
+
+.vertical-tabs .overflow-label {
+    display: inline;
+}
+
 .tab-overflow-btn:hover {
     opacity: 0.85;
     background: var(--rd-toolbar-hover);
