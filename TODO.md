@@ -244,6 +244,7 @@
 
 - [ ] User stories
 
+- [ ] Animated check (svg animation?) like the auth
 
 # Big
 
