@@ -1,0 +1,57 @@
+[board]
+name   = "ESP32-C3 (ESP-IDF)"
+chip   = "esp32c3"
+target = "riscv32imc-esp-espidf"
+
+[tool]
+name  = "espflash"
+check = "espflash --version"
+success_message = "Restart your terminal for changes to take effect"
+
+[tool.install]
+linux = "cargo install espflash"
+mac   = "cargo install espflash"
+win   = "cargo install espflash"
+
+[run]
+command = "cargo run --release"
+
+[rtt]
+enabled  = true
+command  = "espflash monitor"
+channels = [{ up = 0, name = "Terminal" }]
+
+[new_project]
+runner = "espflash flash --monitor"
+
+[[new_project.generate]]
+label   = "cargo generate (esp-idf-template)"
+command = "cargo generate esp-rs/esp-idf-template cargo --name {{PROJECT_NAME}}"
+
+[[new_project.generate]]
+label   = "esp-generate"
+command = "esp-generate --chip esp32c3 -o stack-smashing-protection -o esp-backtrace -o vscode {{PROJECT_NAME}}"
+
+dependencies = '''
+anyhow      = "1"
+esp-idf-hal = "0.46"
+esp-idf-svc = { version = "0.52", features = ["binstart"] }
+log         = "0.4"
+'''
+
+"build-dependencies" = '''
+embuild = "0.33"
+'''
+
+files = """
+src/main.rs
+build.rs
+rust-toolchain.toml
+sdkconfig.defaults
+.cargo/config.toml
+"""
+
+replace = """
+rust-toolchain.toml
+.cargo/config.toml
+"""

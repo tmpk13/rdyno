@@ -83,7 +83,9 @@ export async function downloadBoardToWorkspace(filename: string, downloadUrl: st
 export function listCachedBoards(): string[] {
     const dir = getBoardsInstallDir();
     if (!fs.existsSync(dir)) { return []; }
-    return fs.readdirSync(dir).filter(f => f.endsWith(".toml"));
+    return fs.readdirSync(dir, { withFileTypes: true })
+        .filter(e => e.isDirectory() && fs.existsSync(path.join(dir, e.name, "dynoboard.toml")))
+        .map(e => e.name);
 }
 
 function copyCachedBoardToWorkspace(filename: string): void {
@@ -108,14 +110,14 @@ function getWorkspaceBoardDir(): string | undefined {
 
 export function isBoardInWorkspace(filename: string): boolean {
     const dir = getWorkspaceBoardDir();
-    return !!dir && fs.existsSync(path.join(dir, filename));
+    return !!dir && fs.existsSync(path.join(dir, filename, "dynoboard.toml"));
 }
 
 export function removeBoard(filename: string): void {
     const dir = getWorkspaceBoardDir();
     if (!dir) { return; }
     const p = path.join(dir, filename);
-    if (fs.existsSync(p)) { fs.unlinkSync(p); }
+    if (fs.existsSync(p)) { fs.rmSync(p, { recursive: true, force: true }); }
 }
 
 export async function fetchBoardContent(downloadUrl: string): Promise<string> {
@@ -125,7 +127,7 @@ export async function fetchBoardContent(downloadUrl: string): Promise<string> {
 export function getWorkspaceBoardContent(filename: string): string | undefined {
     const dir = getWorkspaceBoardDir();
     if (!dir) { return undefined; }
-    const p = path.join(dir, filename);
+    const p = path.join(dir, filename, "dynoboard.toml");
     try { return fs.readFileSync(p, "utf-8"); } catch { return undefined; }
 }
 

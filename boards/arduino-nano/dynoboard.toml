@@ -1,0 +1,33 @@
+[board]
+name   = "Arduino Nano (ATmega328P)"
+chip   = "ATmega328P"
+target = "avr-atmega328p"
+
+# ATmega328P is flashed via avrdude/ravedude — not probe-rs.
+# Connect via USB; the Nano's USB-serial adapter exposes a COM/ttyUSB port.
+
+[rtt]
+enabled = false          # No RTT on AVR; use serial (UART) for output
+
+[new_project]
+runner = "ravedude nano -cb 57600"
+
+dependencies = '''
+avr-device    = { version = "0.5", features = ["atmega328p"] }
+arduino-hal   = { git = "https://github.com/Rahix/avr-hal", features = ["arduino-nano"] }
+panic-halt    = "1.0"
+ufmt          = "0.2"
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+rust-toolchain.toml
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+rust-toolchain.toml
+.cargo/config.toml
+"""

@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { exec } from "child_process";
 
-import { getActiveBoard, getActiveBoardFile, setBoardElf, setupBoardDir, NewProjectConfig, NewProjectFile } from "./boardConfig";
+import { getActiveBoard, getActiveBoardFile, setBoardElf, setupBoardDir, NewProjectConfig, NewProjectFile, getProjectFiles } from "./boardConfig";
 import { getBoardDir } from "./projectConfig";
 
 let outputChannel: vscode.OutputChannel | undefined;
@@ -77,8 +77,9 @@ async function runNewProject(np: NewProjectConfig, boardName: string, protocol: 
             await runCargoNew(parentDir, name);
 
             progress.report({ message: "Writing project files…" });
-            writeProjectFiles(projectDir, np.files ?? [], protocol, boardFile);
-            quickCheckFiles(projectDir, np.files ?? []);
+            const files = getProjectFiles(np);
+            writeProjectFiles(projectDir, files, protocol, boardFile);
+            quickCheckFiles(projectDir, files);
 
             progress.report({ message: "Adding dependencies…" });
             if (np.dependencies) {
@@ -98,7 +99,8 @@ async function runNewProject(np: NewProjectConfig, boardName: string, protocol: 
 export function applyBoardToProject(extensionPath: string): ApplyResult | undefined {
     const board = getActiveBoard();
     const wsRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!board?.new_project?.files || !wsRoot) { return undefined; }
+    const projectFiles = board?.new_project ? getProjectFiles(board.new_project) : [];
+    if (!board?.new_project || projectFiles.length === 0 || !wsRoot) { return undefined; }
 
     // Ensure .rustdyno exists before applying
     setupBoardDir(extensionPath);
@@ -110,7 +112,7 @@ export function applyBoardToProject(extensionPath: string): ApplyResult | undefi
     const np = board.new_project;
     const result: ApplyResult = { generated: [], replaced: [], skipped: [], appended: [] };
 
-    for (const f of np.files ?? []) {
+    for (const f of projectFiles) {
         const dest = path.join(wsRoot, f.path);
         const exists = fs.existsSync(dest);
 

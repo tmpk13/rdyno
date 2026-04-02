@@ -1,0 +1,53 @@
+[board]
+name   = "Raspberry Pi Pico (RP2040)"
+chip   = "RP2040"
+target = "thumbv6m-none-eabi"
+
+[tool]
+name  = "probe-rs"
+check = "probe-rs --version"
+success_message = "Restart your terminal for changes to take effect"
+
+[tool.install]
+linux = "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh | sh"
+mac   = "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh | sh"
+win   = "powershell -ExecutionPolicy ByPass -c \"irm https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.ps1 | iex\""
+
+[probe]
+protocol = "swd"
+speed    = 4000
+
+[flash]
+restore_unwritten = false
+halt_afterwards   = false
+
+[rtt]
+enabled  = true
+channels = [{ up = 0, name = "Terminal" }]
+
+[new_project]
+runner = "probe-rs run --chip RP2040 --protocol swd"
+
+dependencies = '''
+cortex-m         = { version = "0.7.7", features = ["inline-asm"] }
+cortex-m-rt      = "0.7.5"
+panic-halt       = "1.0"
+rtt-target       = "0.6"
+rp2040-hal       = { version = "0.10", features = ["rt"] }
+rp2040-boot2     = "0.3"
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+Embed.toml
+memory.x
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+Embed.toml
+memory.x
+.cargo/config.toml
+"""

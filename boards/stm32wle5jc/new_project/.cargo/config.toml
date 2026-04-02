@@ -1,0 +1,6 @@
+[target.thumbv7em-none-eabi]
+runner    = "probe-rs run --chip STM32WLE5JCIx --protocol {{PROTOCOL}}"
+rustflags = ["-C", "link-arg=-Tlink.x", "-C", "link-arg=-Tmemory.x"]
+
+[build]
+target = "thumbv7em-none-eabi"

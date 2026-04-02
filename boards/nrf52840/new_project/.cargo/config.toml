@@ -1,0 +1,10 @@
+[target.thumbv7em-none-eabihf]
+runner    = "probe-rs run --chip nRF52840_xxAA --protocol {{PROTOCOL}}"
+rustflags = [
+  "-C", "linker=rust-lld",
+  "-C", "link-arg=-Tlink.x",
+  "-C", "link-arg=-Tmemory.x",
+]
+
+[build]
+target = "thumbv7em-none-eabihf"

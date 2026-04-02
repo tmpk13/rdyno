@@ -1,0 +1,43 @@
+[board]
+name   = "STM32WLE5JC"
+chip   = "STM32WLE5JCIx"
+target = "thumbv7em-none-eabi"
+
+[probe]
+protocol = "swd"
+speed    = 1000          # kHz — WL series is sensitive to speed
+
+[flash]
+restore_unwritten = false
+halt_afterwards   = false
+
+[rtt]
+enabled  = true
+channels = [{ up = 0, name = "Terminal" }]
+
+[new_project]
+runner = "probe-rs run --chip STM32WLE5JCIx --protocol swd"
+
+dependencies = '''
+cortex-m       = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt    = "0.7.5"
+nb             = "1.1"
+panic-halt     = "1.0"
+rtt-target     = "0.6"
+stm32wlxx-hal  = { version = "0.3", features = ["stm32wle5", "rt"] }
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+Embed.toml
+memory.x
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+Embed.toml
+memory.x
+.cargo/config.toml
+"""

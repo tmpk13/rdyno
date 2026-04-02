@@ -1,0 +1,44 @@
+[board]
+name   = "Teensy 3.2 (MK20DX256)"
+chip   = "MK20DX256xxx7"
+target = "thumbv7em-none-eabihf"
+
+# Teensy 3.2 is normally flashed via HalfKay bootloader (teensy_loader_cli).
+# SWD debug is possible via the exposed pads but requires soldering.
+# Note: Rust HAL support for Kinetis MK20 is minimal; this config provides
+# a bare cortex-m foundation.
+
+[probe]
+protocol = "swd"
+speed    = 1000          # kHz — via soldered SWD pads only
+
+[flash]
+restore_unwritten = false
+halt_afterwards   = false
+
+[rtt]
+enabled  = true
+channels = [{ up = 0, name = "Terminal" }]
+
+[new_project]
+runner = "teensy_loader_cli --mcu=TEENSY32 -w -v"
+
+dependencies = '''
+cortex-m    = { version = "0.7.7", features = ["inline-asm", "critical-section-single-core"] }
+cortex-m-rt = "0.7.5"
+panic-halt  = "1.0"
+rtt-target  = "0.6"
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+memory.x
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+memory.x
+.cargo/config.toml
+"""

@@ -1,0 +1,8 @@
+[build]
+target = "avr-atmega328p"
+
+[target.avr-atmega328p]
+runner = "ravedude nano -cb 57600"
+
+[unstable]
+build-std = ["core"]

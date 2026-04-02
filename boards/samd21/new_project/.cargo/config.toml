@@ -1,0 +1,6 @@
+[target.thumbv6m-none-eabi]
+runner    = "probe-rs run --chip ATSAMD21G18A --protocol {{PROTOCOL}}"
+rustflags = ["-C", "link-arg=-Tlink.x", "-C", "link-arg=-Tmemory.x"]
+
+[build]
+target = "thumbv6m-none-eabi"

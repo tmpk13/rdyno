@@ -1,0 +1,53 @@
+[board]
+name   = "STM32F411 Black Pill"
+chip   = "STM32F411CEUx"
+target = "thumbv7em-none-eabihf"
+
+[tool]
+name  = "probe-rs"
+check = "probe-rs --version"
+success_message = "Restart your terminal for changes to take effect"
+
+[tool.install]
+linux = "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh | sh"
+mac   = "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh | sh"
+win   = "powershell -ExecutionPolicy ByPass -c \"irm https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.ps1 | iex\""
+
+[probe]
+protocol = "swd"
+speed    = 4000
+
+[flash]
+restore_unwritten = false
+halt_afterwards   = false
+
+[rtt]
+enabled  = true
+channels = [{ up = 0, name = "Terminal" }]
+
+[new_project]
+runner = "probe-rs run --chip STM32F411CEUx --protocol swd"
+
+dependencies = '''
+cortex-m      = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt   = "0.7.5"
+nb            = "1.1"
+panic-halt    = "1.0"
+rtt-target    = "0.6"
+stm32f4xx-hal = { version = "0.22", features = ["stm32f411", "rt"] }
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+Embed.toml
+memory.x
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+Embed.toml
+memory.x
+.cargo/config.toml
+"""

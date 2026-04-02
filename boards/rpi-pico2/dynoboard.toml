@@ -1,0 +1,42 @@
+[board]
+name   = "Raspberry Pi Pico 2 (RP2350)"
+chip   = "RP2350A"
+target = "thumbv8m.main-none-eabihf"
+
+[probe]
+protocol = "swd"
+speed    = 4000
+
+[flash]
+restore_unwritten = false
+halt_afterwards   = false
+
+[rtt]
+enabled  = true
+channels = [{ up = 0, name = "Terminal" }]
+
+[new_project]
+runner = "probe-rs run --chip RP2350A --protocol swd"
+
+dependencies = '''
+cortex-m         = { version = "0.7.7", features = ["inline-asm"] }
+cortex-m-rt      = "0.7.5"
+panic-halt       = "1.0"
+rtt-target       = "0.6"
+rp235x-hal       = { version = "0.2", features = ["rt"] }
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+Embed.toml
+memory.x
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+Embed.toml
+memory.x
+.cargo/config.toml
+"""

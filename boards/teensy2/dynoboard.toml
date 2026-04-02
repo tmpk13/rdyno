@@ -1,0 +1,32 @@
+[board]
+name   = "Teensy 2.0 (ATmega32U4)"
+chip   = "ATmega32U4"
+target = "avr-atmega32u4"
+
+# ATmega32U4 is flashed via HalfKay bootloader using teensy_loader_cli.
+# Press the reset button on the Teensy to enter bootloader mode before flashing.
+
+[rtt]
+enabled = false          # No RTT on AVR; use USB serial (CDC) for output
+
+[new_project]
+runner = "teensy_loader_cli --mcu=TEENSY2 -w -v"
+
+dependencies = '''
+avr-device  = { version = "0.5", features = ["atmega32u4"] }
+panic-halt  = "1.0"
+ufmt        = "0.2"
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+rust-toolchain.toml
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+rust-toolchain.toml
+.cargo/config.toml
+"""

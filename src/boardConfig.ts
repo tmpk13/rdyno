@@ -20,8 +20,10 @@ export interface GenerateCommand {
 }
 
 export interface NewProjectConfig {
-  /** Files to create when generating a new project from this board config */
-  files?: NewProjectFile[];
+  /** Resolved files array, or raw newline-separated file list from TOML */
+  files?: NewProjectFile[] | string;
+  /** Files that should overwrite existing ones (newline-separated list) */
+  replace?: string;
   /** Optional cargo dependencies to append to Cargo.toml */
   dependencies?: string;
   /** Optional cargo build-dependencies to append to Cargo.toml */
@@ -30,6 +32,11 @@ export interface NewProjectConfig {
   runner?: string;
   /** Optional generate command(s) — string for one, array of {label, command} for multiple */
   generate?: string | GenerateCommand[];
+}
+
+/** Get resolved files array from a NewProjectConfig (always NewProjectFile[] after resolveFiles) */
+export function getProjectFiles(np: NewProjectConfig): NewProjectFile[] {
+  return Array.isArray(np.files) ? np.files : [];
 }
 
 export interface ToolInstallConfig {
@@ -69,6 +76,39 @@ export interface BoardConfig {
   layout?: PanelLayout;
 }
 
+/** Parse newline-separated file list string into trimmed non-empty lines */
+function parseFileList(raw: string): string[] {
+  return raw.split("\n").map(l => l.trim()).filter(Boolean);
+}
+
+/**
+ * Resolve new_project.files from the board directory.
+ * If files is a newline-separated string, read each file from the
+ * new_project/ subdirectory next to dynoboard.toml and build
+ * the NewProjectFile[] array.
+ */
+function resolveFiles(raw: BoardConfig, boardDir: string): void {
+  const np = raw.new_project;
+  if (!np || typeof np.files !== "string") { return; }
+
+  const filePaths = parseFileList(np.files);
+  const replaceSet = new Set(np.replace ? parseFileList(np.replace) : []);
+  const newProjectDir = path.join(boardDir, "new_project");
+  const arr: NewProjectFile[] = [];
+
+  for (const filePath of filePaths) {
+    const src = path.join(newProjectDir, filePath);
+    if (!fs.existsSync(src)) { continue; }
+    arr.push({
+      path: filePath,
+      content: fs.readFileSync(src, "utf-8"),
+      replace_if_exists: replaceSet.has(filePath) || undefined,
+    });
+  }
+
+  np.files = arr;
+}
+
 let activeBoard: BoardConfig | undefined;
 let activeBoardFile: string | undefined;
 let activeBoardPath: string | undefined;
@@ -82,9 +122,19 @@ export function setupBoardDir(extensionPath: string): void {
   const dir = getBoardDir();
   if (fs.existsSync(dir)) { return; }
   fs.mkdirSync(dir, { recursive: true });
-  const src = path.join(extensionPath, "boards", "esp32c3.toml");
+  const src = path.join(extensionPath, "boards", "esp32c3");
   if (fs.existsSync(src)) {
-    fs.copyFileSync(src, path.join(dir, "esp32c3.toml"));
+    copyDirRecursive(src, path.join(dir, "esp32c3"));
+  }
+}
+
+function copyDirRecursive(src: string, dest: string): void {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dest, entry.name);
+    if (entry.isDirectory()) { copyDirRecursive(s, d); }
+    else { fs.copyFileSync(s, d); }
   }
 }
 
@@ -131,10 +181,14 @@ export function listBoards(): string[] {
   const result: string[] = [];
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) { continue; }
-    for (const f of fs.readdirSync(dir)) {
-      if (f.endsWith(".toml") && f !== "picker.toml" && f !== "rustdyno.toml" && !seen.has(f)) {
-        seen.add(f);
-        result.push(f);
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      // Directory-based board: subdir containing dynoboard.toml
+      if (entry.isDirectory() && !entry.name.startsWith(".") && !seen.has(entry.name)) {
+        const toml = path.join(dir, entry.name, "dynoboard.toml");
+        if (fs.existsSync(toml)) {
+          seen.add(entry.name);
+          result.push(entry.name);
+        }
       }
     }
   }
@@ -142,16 +196,24 @@ export function listBoards(): string[] {
 }
 
 export function selectBoardByFile(filename: string): BoardConfig | undefined {
-  const wsPath = path.join(getBoardDir(), filename);
+  // filename is the board directory name (e.g. "nrf52840")
+  const wsDir = path.join(getBoardDir(), filename);
   const globalDir = getGlobalBoardsDir();
-  const globalPath = globalDir ? path.join(globalDir, filename) : undefined;
-  const filePath = fs.existsSync(wsPath) ? wsPath : (globalPath && fs.existsSync(globalPath) ? globalPath : wsPath);
+  const globalBoardDir = globalDir ? path.join(globalDir, filename) : undefined;
+
+  const wsToml = path.join(wsDir, "dynoboard.toml");
+  const globalToml = globalBoardDir ? path.join(globalBoardDir, "dynoboard.toml") : undefined;
+
+  const filePath = fs.existsSync(wsToml) ? wsToml
+    : (globalToml && fs.existsSync(globalToml) ? globalToml : wsToml);
+
   if (!fs.existsSync(filePath)) {
     vscode.window.showErrorMessage(`Board config not found: ${filePath}`);
     return;
   }
   const raw = fs.readFileSync(filePath, "utf-8");
   activeBoard = TOML.parse(raw) as unknown as BoardConfig;
+  resolveFiles(activeBoard, path.dirname(filePath));
   activeBoardFile = filename;
   activeBoardPath = filePath;
   return activeBoard;

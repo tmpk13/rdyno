@@ -1,0 +1,42 @@
+[board]
+name   = "SAMD21 (ATSAMD21G18A)"
+chip   = "ATSAMD21G18A"
+target = "thumbv6m-none-eabi"
+
+[probe]
+protocol = "swd"
+speed    = 4000
+
+[flash]
+restore_unwritten = false
+halt_afterwards   = false
+
+[rtt]
+enabled  = true
+channels = [{ up = 0, name = "Terminal" }]
+
+[new_project]
+runner = "probe-rs run --chip ATSAMD21G18A --protocol swd"
+
+dependencies = '''
+cortex-m     = { version = "0.7.7", features = ["inline-asm", "critical-section-single-core"] }
+cortex-m-rt  = "0.7.5"
+panic-halt   = "1.0"
+rtt-target   = "0.6"
+atsamd-hal   = { version = "0.18", features = ["samd21g18a", "rt"] }
+'''
+
+files = """
+rustdyno.toml
+src/main.rs
+Embed.toml
+memory.x
+.cargo/config.toml
+"""
+
+replace = """
+rustdyno.toml
+Embed.toml
+memory.x
+.cargo/config.toml
+"""
