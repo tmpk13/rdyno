@@ -50,6 +50,152 @@ function fuzzyScore(query, candidate) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// Feature Search — fuzzy + curated synonyms (FEATURE_INDEX)
+// ══════════════════════════════════════════════════════════════
+const TAB_NAMES = {
+    controls: 'Controls',
+    library: 'Library',
+    examples: 'Examples',
+    newProject: 'New Project',
+    boardMaker: 'Board Maker',
+};
+
+function searchFeatures(query) {
+    if (!query || !query.trim()) return [];
+    const q = query.trim().toLowerCase();
+    const out = [];
+    const idx = (typeof FEATURE_INDEX !== 'undefined') ? FEATURE_INDEX : [];
+    for (const e of idx) {
+        const labelScore = fuzzyScore(q, e.label);
+        let kwScore = 0;
+        let kwHit = null;
+        for (const k of (e.keywords || [])) {
+            const s = fuzzyScore(q, k);
+            if (s > kwScore) { kwScore = s; kwHit = k; }
+        }
+        const descScore = e.description ? fuzzyScore(q, e.description) : 0;
+        const score = Math.max(labelScore, 0.9 * kwScore, 0.6 * descScore);
+        if (score >= 0.35) out.push({ entry: e, score, kwHit });
+    }
+    out.sort((a, b) => b.score - a.score);
+    return out.slice(0, 8);
+}
+
+function goToFeature(entry) {
+    const closeSearch = () => {
+        const input = document.getElementById('featureSearchInput');
+        const results = document.getElementById('featureSearchResults');
+        if (input) { input.value = ''; }
+        if (results) { results.classList.add('hidden'); results.innerHTML = ''; }
+    };
+    if (!entry) { closeSearch(); return; }
+    if (entry.tab) { switchTab(entry.tab); }
+    requestAnimationFrame(() => {
+        // Auto-expand the config section if the destination lives inside it
+        if (entry.section === 'config' && !_isConfigOpen) { toggleConfig(); }
+        const target = entry.elementId
+            ? document.getElementById(entry.elementId)
+            : (entry.section
+                ? document.querySelector(`[data-section="${entry.section}"]`)
+                : document.getElementById('tab-' + entry.tab));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.classList.remove('feature-highlight');
+            void target.offsetWidth;
+            target.classList.add('feature-highlight');
+            setTimeout(() => target.classList.remove('feature-highlight'), 1600);
+        }
+        closeSearch();
+    });
+}
+
+let _featureSearchActive = -1;
+
+function renderFeatureResults(results) {
+    const list = document.getElementById('featureSearchResults');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!results.length) {
+        list.classList.remove('hidden');
+        const empty = document.createElement('div');
+        empty.className = 'feature-search-empty';
+        empty.textContent = 'No matches';
+        list.appendChild(empty);
+        return;
+    }
+    list.classList.remove('hidden');
+    results.forEach((r, i) => {
+        const row = document.createElement('div');
+        row.className = 'feature-search-row' + (i === _featureSearchActive ? ' active' : '');
+        row.setAttribute('data-idx', String(i));
+
+        const main = document.createElement('div');
+        main.className = 'feature-search-main';
+        main.textContent = r.entry.label;
+
+        const meta = document.createElement('div');
+        meta.className = 'feature-search-meta';
+        const tabName = TAB_NAMES[r.entry.tab] || r.entry.tab || '';
+        meta.textContent = r.kwHit && r.kwHit.toLowerCase() !== r.entry.label.toLowerCase()
+            ? `${tabName} \u00b7 ${r.kwHit}`
+            : tabName;
+
+        row.appendChild(main);
+        row.appendChild(meta);
+        row.addEventListener('mousedown', e => {
+            // mousedown so we run before the input blur closes the dropdown
+            e.preventDefault();
+            goToFeature(r.entry);
+        });
+        list.appendChild(row);
+    });
+}
+
+function setupFeatureSearch() {
+    const input = document.getElementById('featureSearchInput');
+    const list = document.getElementById('featureSearchResults');
+    if (!input || !list) return;
+    let lastResults = [];
+    const update = () => {
+        lastResults = searchFeatures(input.value);
+        _featureSearchActive = lastResults.length ? 0 : -1;
+        renderFeatureResults(lastResults);
+    };
+    input.addEventListener('input', update);
+    input.addEventListener('focus', () => {
+        if (input.value.trim()) { update(); }
+    });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!lastResults.length) return;
+            _featureSearchActive = (_featureSearchActive + 1) % lastResults.length;
+            renderFeatureResults(lastResults);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!lastResults.length) return;
+            _featureSearchActive = (_featureSearchActive - 1 + lastResults.length) % lastResults.length;
+            renderFeatureResults(lastResults);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const pick = lastResults[_featureSearchActive] || lastResults[0];
+            if (pick) { goToFeature(pick.entry); }
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            input.value = '';
+            list.classList.add('hidden');
+            list.innerHTML = '';
+            input.blur();
+        }
+    });
+    document.addEventListener('mousedown', e => {
+        if (!e.target.closest('#featureSearchBar')) {
+            list.classList.add('hidden');
+        }
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
 // Shared: spin refresh icon
 // ══════════════════════════════════════════════════════════════
 function spinRefresh(id) {
@@ -2054,6 +2200,7 @@ function bmSetCheck(section, field, value) {
 }
 
 bmUpdateAddMenu();
+setupFeatureSearch();
 
 // ══════════════════════════════════════════════════════════════
 // Unified message listener
@@ -2065,6 +2212,11 @@ window.addEventListener('message', e => {
         case 'init':
             render(msg.data);
             break;
+        case 'focusFeatureSearch': {
+            const input = document.getElementById('featureSearchInput');
+            if (input) { input.focus(); input.select(); }
+            break;
+        }
         case 'ports': {
             const menu = document.getElementById('menu-port');
             const valEl = document.getElementById('cs-val-port');

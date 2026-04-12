@@ -250,6 +250,8 @@
 
 - [ ] Implement svg animated check
 
+- [ ] Change loading to 3 bars height change left -> right or spining bars/dots (dual cycloidal?)
+
 # Big
 
 - [ ] When I button is pressed FIRST thing that should happen is trigger an animation
@@ -261,6 +263,8 @@
             - [ ] Otherwise have to trust or confirm?
     - [ ] Implement security for commands have a confirm window on all non trusted cmds
         - [ ] Add checkbox to trust a library
+
+
 
 # ?
 - [ ] integrate installer for board toolchains??
